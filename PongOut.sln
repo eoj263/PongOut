@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31205.134
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PongOut", "PongOut\PongOut.csproj", "{60F8E957-BA66-48B3-BBD0-3928403F0DBE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{60F8E957-BA66-48B3-BBD0-3928403F0DBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60F8E957-BA66-48B3-BBD0-3928403F0DBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60F8E957-BA66-48B3-BBD0-3928403F0DBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60F8E957-BA66-48B3-BBD0-3928403F0DBE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B3C4D71E-B0E7-4202-9241-C0D7349ED48D}
+	EndGlobalSection
+EndGlobal
