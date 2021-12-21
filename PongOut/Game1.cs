@@ -150,6 +150,16 @@ namespace PongOut
         }
     }
 
+
+    public abstract class Ball : MovingObject, IContent
+    {
+    
+        public Ball()
+        {
+
+        }
+    }
+
     public abstract class MovingObject
     {
     }
