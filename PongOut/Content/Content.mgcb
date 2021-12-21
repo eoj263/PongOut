@@ -49,3 +49,15 @@
 /processorParam:TextureFormat=Color
 /build:menues/mainMenu/textures/start.png
 
+#begin paddle/textures/flowerPaddle.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:paddle/textures/flowerPaddle.png
+
