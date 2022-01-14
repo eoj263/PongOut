@@ -11,7 +11,7 @@ namespace PongOut
         private SortedSet<GameObject> gameObjects;
         private List<WorldObject> worldObjects;
 
-        public Paddle paddle;
+        public Player player;
 
         public void Draw(SpriteBatch sb)
         {
@@ -23,9 +23,8 @@ namespace PongOut
             gameObjects = new SortedSet<GameObject>();
             worldObjects = new List<WorldObject>();
 
-
-            paddle = new Paddle(new Vector2(20, window.ClientBounds.Y / 2));
-            LoadAndAddObject(paddle);
+            player = new Player(new Vector2(200, 200));
+            LoadAndAddObject(player);
         }
 
 

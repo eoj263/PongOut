@@ -74,17 +74,4 @@ namespace PongOut
             }
         }
     }
-
-    public class Player : WorldObject
-    {
-        public Player(Vector2 position, Texture2D texture = null) : base(position, texture)
-        {
-            
-        }
-
-        public override void Update(GameWindow gw, GameTime gt)
-        {
-        }
-    }
-
 }

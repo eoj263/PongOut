@@ -141,26 +141,31 @@ namespace PongOut
         {
             sb.Draw(Texture, Position, null, Color, Rotation, Origin, Scale, SpriteEffects.None, LayerDepth);
         }
-
-
-
-        protected void Draw()
-        {
-
-        }
     }
 
 
-    public abstract class Ball : MovingObject, IContent
-    {
+    //public abstract class Ball : MovingObject, IContent
+    //{
     
-        public Ball()
-        {
+    //    public Ball()
+    //    {
 
-        }
-    }
+    //    }
+    //}
 
-    public abstract class MovingObject
+    public abstract class MovingObject : WorldObject
     {
+        protected MovingObject(Vector2 position, Texture2D texture = null) : base(position, texture)
+        {
+        }
+
+
+        protected Vector2 velocity = Vector2.Zero;
+
+        public override void Update(GameWindow gw, GameTime gt)
+        {
+            Position += velocity;
+        }
+
     }
 }
