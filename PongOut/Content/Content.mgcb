@@ -13,6 +13,13 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin fonts/defaultFont.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/defaultFont.spritefont;fonts/default.spritefont
+
 #begin menues/mainMenu/textures/exit.png
 /importer:TextureImporter
 /processor:TextureProcessor

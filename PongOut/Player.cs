@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System.IO;
+using System;
 
 namespace PongOut
 {
@@ -18,18 +19,26 @@ namespace PongOut
         public void LoadContent(ContentManager cm)
         {
             Texture = cm.Load<Texture2D>(DEFAULT_STAND);
+            CenterOrigin();
         }
 
-        Vector2 wantedMovementDirection;
 
+        Vector2 wantedRelativeMovementDirection;
 
-        float speed = 20;
+        float speed = 5;
         public override void Update(GameWindow gw, GameTime gt)
         {
-            velocity = wantedMovementDirection * speed;
+            HandleInput();
+
+            // TODO Custom math and rotate
+            Rotation = MathF.Atan2(looking.Y, looking.X);
+
+            velocity = Vector2.Transform(wantedRelativeMovementDirection * speed, Matrix.CreateRotationZ(Rotation));
             base.Update(gw, gt);
         }
 
+
+        Vector2 looking = new Vector2(1,0);
 
 
         Keys moveUpKey = Keys.W;
@@ -61,8 +70,18 @@ namespace PongOut
                 wanted.X = 1;
             }
 
-            wantedMovementDirection = Vector2.Normalize(wanted);
+
+            if(wanted.X != 0 && wanted.Y != 0)
+            {
+                wanted.Normalize();
+            }
+            wantedRelativeMovementDirection = wanted;
+
+            MouseState ms = Mouse.GetState();
+
+            var diff = -Position + ms.Position.ToVector2();
+
+            this.looking = Vector2.Normalize(diff);
         }
     }
-
 }

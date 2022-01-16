@@ -7,6 +7,9 @@ namespace PongOut
 {
     public static class GameElements
     {
+
+        public static bool DebugMode { get; private set; } = true;
+
         public enum State { MainMenu, Run, Highscore, Quit };
         public static State CurrentState = State.MainMenu;
         static World world;
