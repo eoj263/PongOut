@@ -10,6 +10,8 @@ namespace PongOut
     {
         public bool GameOver { get; private set; }
 
+        // Lagra gameObjects i en hash grej.
+        // Enemies kommer sedan att referera till key:n
         private SortedSet<GameObject> gameObjects;
         private List<WorldObject> worldObjects;
 
@@ -37,11 +39,11 @@ namespace PongOut
                 debugText = new DebugText(new Vector2(200, 200), 9);
             }
 
-            
-
-
             player = new Player(new Vector2(200, 200));
             LoadAndAddObject(player);
+
+            Zombie zombie1 = new Zombie(new Vector2(300, 300));
+            LoadAndAddObject(zombie1);
         }
 
 
@@ -50,9 +52,6 @@ namespace PongOut
             {
                 return;
             }
-
-
-            
         }
 
 

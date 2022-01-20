@@ -9,6 +9,18 @@ namespace PongOut
         {
         }
 
+
+        public Rectangle Rect
+        {
+            get => new Rectangle(Position.ToPoint(), Texture.Bounds.Size);
+        }
+
+
+        public bool CheckCollision(PhysicsObject other)
+        {
+            return Rect.Intersects(other.Rect);
+        }
+
         public override void Update(GameWindow gw, GameTime gt)
         {
             base.Update(gw, gt);

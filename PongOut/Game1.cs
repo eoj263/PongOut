@@ -7,6 +7,8 @@ namespace PongOut
 {
     public class Game1 : Game
     {
+        // Textures come from https://www.kenney.nl/assets/topdown-shooter
+
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         public Game1()

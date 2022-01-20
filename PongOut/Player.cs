@@ -29,7 +29,6 @@ namespace PongOut
         public override void Update(GameWindow gw, GameTime gt)
         {
             HandleInput();
-
             // TODO Custom math and rotate
             Rotation = MathF.Atan2(looking.Y, looking.X);
 
@@ -50,22 +49,22 @@ namespace PongOut
             KeyboardState kbs = Keyboard.GetState();
             Vector2 wanted = Vector2.Zero;
 
-            if (kbs.IsKeyDown(moveUpKey))
+            if (kbs.IsKeyDown(moveLeftKey))
             {
                 wanted.Y = -1;
             }
 
-            if (kbs.IsKeyDown(moveDownKey))
+            if (kbs.IsKeyDown(moveRightKey))
             {
                 wanted.Y = 1;
             }
 
-            if (kbs.IsKeyDown(moveLeftKey))
+            if (kbs.IsKeyDown(moveDownKey))
             {
                 wanted.X = -1;
             }
 
-            if (kbs.IsKeyDown(moveRightKey))
+            if (kbs.IsKeyDown(moveUpKey))
             {
                 wanted.X = 1;
             }
@@ -84,4 +83,73 @@ namespace PongOut
             this.looking = Vector2.Normalize(diff);
         }
     }
+
+    public abstract class Enemy : PhysicsObject, IContent 
+    {
+        public static readonly string CONTENT_PATH = "enemy";
+
+        protected Enemy(Vector2 position) : base(position, null)
+        {
+        }
+
+        public abstract void LoadContent(ContentManager cm);
+    }
+
+    public abstract class DamageableEnemy : Enemy, IDamageable
+    {
+
+        public float Health { get; private set; }
+
+        public DamageableEnemy(Vector2 position, float health) : base(position)
+        {
+            Health = health;
+        }
+
+        public bool Damage(float ammount)
+        {
+            Health -= ammount;
+            
+            if(Health < 0)
+                IsAlive = false;
+            return IsAlive;
+        }
+    }
+
+
+    public interface IDamageable
+    {
+        /// <summary>
+        /// Damage the object
+        /// </summary>
+        /// <param name="ammount"></param>
+        /// <returns>If the object now is dead</returns>
+        bool Damage(float ammount);
+    }
+
+
+    public class Zombie : DamageableEnemy 
+    {
+        public static new readonly string CONTENT_PATH = Path.Combine(Enemy.CONTENT_PATH, "zombie");
+        public static readonly string WALK_TEXTURE_PATH = Path.Combine(CONTENT_PATH, "walk");
+
+        static readonly float DEFAULT_HEALTH = 100;
+        
+        static Texture2D walk;
+
+        public Zombie(Vector2 position): base(position, DEFAULT_HEALTH)
+        {
+        }
+
+        public override void LoadContent(ContentManager cm)
+        {
+            if(walk == null)
+            {
+                walk = cm.Load<Texture2D>(WALK_TEXTURE_PATH);
+            }
+
+            Texture = walk;
+        }
+    }
+
+
 }
