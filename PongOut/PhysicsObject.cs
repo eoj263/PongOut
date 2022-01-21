@@ -15,6 +15,7 @@ namespace PongOut
             get => new Rectangle(Position.ToPoint(), Texture.Bounds.Size);
         }
 
+        public abstract bool OnCollision(PhysicsObject other);
 
         public bool CheckCollision(PhysicsObject other)
         {

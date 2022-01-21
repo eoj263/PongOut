@@ -148,6 +148,7 @@ namespace PongOut
             }
 
             Texture = walk;
+            CenterOrigin();
         }
     }
 
