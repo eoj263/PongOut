@@ -37,7 +37,7 @@ namespace PongOut
         /// Is called when this object should be drawn 
         /// </summary>
         /// <param name="sb"></param>
-        public void Draw(SpriteBatch sb)
+        public virtual void Draw(SpriteBatch sb)
         {
             sb.Draw(Texture, Position, null, Color, Rotation, Origin, Scale, SpriteEffects.None, LayerDepth);
         }

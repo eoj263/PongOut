@@ -23,6 +23,7 @@ namespace PongOut
         protected override void Initialize()
         {
             base.Initialize();
+            GameElements.Initialize();
         }
 
         protected override void LoadContent()

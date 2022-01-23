@@ -13,7 +13,15 @@ namespace PongOut
         static readonly string DEFAULT_STAND = Path.Join(CONTENT_PATH, "defualt/stand"); 
         public Player(Vector2 position) : base(position, null)
         {
+        }
 
+        public override void OnCollision(PhysicsObject obj) {
+            GameElements.WriteDebugLine("Player colided fuk!" + obj.GetType());
+
+            if(obj is DamageableEnemy)
+            {
+                (obj as DamageableEnemy).Damage(120);
+            }
         }
 
         public void LoadContent(ContentManager cm)
@@ -149,6 +157,10 @@ namespace PongOut
 
             Texture = walk;
             CenterOrigin();
+        }
+
+        public override void OnCollision(PhysicsObject other)
+        {
         }
     }
 

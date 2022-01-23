@@ -12,16 +12,34 @@ namespace PongOut
 
         public enum State { MainMenu, Run, Highscore, Quit };
         public static State CurrentState = State.MainMenu;
-        static World world;
+        public static World World { get; private set; }
 
+        static DebugText debugText;
+
+        public static void DrawOverlay(SpriteBatch sb) {
+            if (DebugMode)
+                debugText.Draw(sb);
+        }
+
+        public static void WriteDebugLine(string text)
+        {
+            if (!GameElements.DebugMode)
+            {
+                return;
+            }
+
+            debugText.Log(text);
+        }
         public static void Initialize()
         {
+            debugText = new DebugText(Vector2.One, 10);
+            LoadContentsOf(debugText);
         }
 
         public static void LoadWorld(ContentManager content, GameWindow window)
         {
-            world = new World();
-            world.LoadInitialState(window);
+            World = new World();
+            World.LoadInitialState(window);
         }
 
         private static ContentManager content;
@@ -49,15 +67,16 @@ namespace PongOut
 
         public static void RunDraw(SpriteBatch sb)
         {
-            world.Draw(sb);
+            World.Draw(sb);
+            DrawOverlay(sb);
         }
 
 
         public static State RunUpdate(ContentManager content, GameWindow window, GameTime gameTime)
         {
-            world.Update(window, gameTime);
+            World.Update(window, gameTime);
 
-            if (world.GameOver)
+            if (World.GameOver)
                 return State.MainMenu;
             return State.Run;
         }
@@ -70,6 +89,7 @@ namespace PongOut
         public static void MainMenuDraw(SpriteBatch sb)
         {
             mainMenu.Draw(sb);
+            DrawOverlay(sb);
         }
 
         public static State HighScoreUpdate(GameTime gt)
@@ -84,6 +104,7 @@ namespace PongOut
 
         public static void HighScoreDraw(SpriteBatch sb)
         {
+            DrawOverlay(sb);
         }
 
         public static void SetState(State nextState)

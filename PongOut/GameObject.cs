@@ -13,6 +13,12 @@ namespace PongOut
             get; protected set;
         } = true;
 
+        //protected World world;
+        //public GameObject(World w)
+        //{
+        //    world = w;
+        //}
+
         //public int CompareTo([AllowNull] GameObject other)
         //{
         //    return UpdatePriority - other.UpdatePriority;
