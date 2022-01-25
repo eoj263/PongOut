@@ -9,12 +9,11 @@ namespace PongOut
         {
         }
 
-
-        protected Vector2 velocity = Vector2.Zero;
+        protected Vector2 Velocity { get; set; } = Vector2.Zero;
 
         public override void Update(GameWindow gw, GameTime gt)
         {
-            Position += velocity;
+            Position += Velocity;
         }
 
     }

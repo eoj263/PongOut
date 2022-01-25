@@ -6,6 +6,9 @@ namespace PongOut
 {
     public abstract class PhysicsObject : MovingObject
     {
+
+        public bool HitboxActive { get; protected set; }
+
         protected PhysicsObject(Vector2 position, Texture2D texture = null) : base(position, texture)
         {
             collidingWith = new Queue<PhysicsObject>();
@@ -20,6 +23,9 @@ namespace PongOut
 
         public bool CheckCollision(PhysicsObject other)
         {
+            if (!other.HitboxActive || !HitboxActive)
+                return false;
+
             return Rect.Intersects(other.Rect);
         }
 

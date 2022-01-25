@@ -25,6 +25,7 @@ namespace PongOut
 
         private Player player;
 
+        public Vector2 Size { get; private set; }
 
         public void Draw(SpriteBatch sb)
         {
@@ -43,10 +44,13 @@ namespace PongOut
 
             UIComponents = new List<UIComponent>();
 
-            player = new Player(new Vector2(200, 200));
+            Size = window.ClientBounds.Size.ToVector2();
+
+
+            player = new Player(new Vector2(500, 200));
             LoadAndAddObject(player);
 
-            Zombie zombie1 = new Zombie(new Vector2(300, 300));
+            Zombie zombie1 = new Zombie(new Vector2(300, 300), player);
             LoadAndAddObject(zombie1);
         }
 
@@ -79,11 +83,20 @@ namespace PongOut
 
         public void Update(GameWindow window, GameTime gameTime)
         {
-            foreach (var o in gameObjects.Values)
+            foreach(KeyValuePair<int, GameObject> kv in gameObjects)
             {
-                o.Update(window, gameTime);
+                if (!kv.Value.IsAlive)
+                {
+                    RemoveObject(kv.Key);
+                    continue;
+                }
+
+                kv.Value.Update(window, gameTime);
             }
             DoCollisions();
+
+            if (!player.IsAlive)
+                GameOver = true;
         }
 
         public void DoCollisions() { 
@@ -165,6 +178,7 @@ namespace PongOut
         //    object IEnumerator.Current => vector[currentIdx];
 
         //    public void Dispose()
+
         //    {
         //    }
 

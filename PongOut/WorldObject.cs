@@ -31,8 +31,6 @@ namespace PongOut
             this.Origin = Texture.Bounds.Size.ToVector2() / 2; 
         }
 
-
-
         /// <summary>
         /// Is called when this object should be drawn 
         /// </summary>

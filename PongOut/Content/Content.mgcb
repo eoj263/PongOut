@@ -80,6 +80,18 @@
 /processorParam:TextureFormat=Color
 /build:paddle/textures/flowerPaddle.png
 
+#begin player/defualt/hitman1_gun.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:player/defualt/hitman1_gun.png;player/defualt/gun.png
+
 #begin player/defualt/hitman1_stand.png
 /importer:TextureImporter
 /processor:TextureProcessor
