@@ -20,10 +20,12 @@ namespace PongOut
 
         private List<UIComponent> UIComponents;
 
-
         private int currentGameObjectId = 0;
 
         private Player player;
+
+        private Queue<int> objectsToRemoveQueue = new Queue<int>();
+        private Queue<object> objectsToAddQueue = new Queue<object>();
 
         public Vector2 Size { get; private set; }
 
@@ -50,6 +52,9 @@ namespace PongOut
             player = new Player(new Vector2(500, 200));
             LoadAndAddObject(player);
 
+            ShootingZombie zombie2 = new ShootingZombie(new Vector2(100, 100), player);
+            LoadAndAddObject(zombie2);
+
             Zombie zombie1 = new Zombie(new Vector2(300, 300), player);
             LoadAndAddObject(zombie1);
         }
@@ -70,6 +75,11 @@ namespace PongOut
 
         public void AddObject(object toAdd)
         {
+            if (inGameObjectItteration) {
+                QueueAddObject(toAdd);
+                return;
+            }
+
             if (toAdd is GameObject)
                 gameObjects.Add(currentGameObjectId++, toAdd as GameObject);
             if (toAdd is WorldObject) worldObjects.Add(currentGameObjectId - 1);
@@ -81,8 +91,12 @@ namespace PongOut
             if (toLoad is IContent) GameElements.LoadContentsOf(toLoad as IContent);
         }
 
+        bool inGameObjectItteration = false;
         public void Update(GameWindow window, GameTime gameTime)
         {
+            ProcessGameObjectQueues();
+
+            inGameObjectItteration = true;
             foreach(KeyValuePair<int, GameObject> kv in gameObjects)
             {
                 if (!kv.Value.IsAlive)
@@ -93,11 +107,34 @@ namespace PongOut
 
                 kv.Value.Update(window, gameTime);
             }
+            inGameObjectItteration = false;
+
             DoCollisions();
 
             if (!player.IsAlive)
                 GameOver = true;
         }
+
+        void QueueRemoveObject(int id) {
+            objectsToRemoveQueue.Enqueue(id);
+        }
+        void QueueAddObject(object obj) {
+            objectsToAddQueue.Enqueue(obj);
+        }
+
+        void ProcessGameObjectQueues()
+        {
+            while(objectsToRemoveQueue.Count > 0)
+            {
+                RemoveObject(objectsToRemoveQueue.Dequeue());
+            }
+
+            while(objectsToAddQueue.Count > 0)
+            {
+                AddObject(objectsToAddQueue.Dequeue());
+            }
+        }
+
 
         public void DoCollisions() { 
 
@@ -123,7 +160,6 @@ namespace PongOut
                 ((PhysicsObject)gameObjects[id]).DispatchCollisions();
             }
         }
-
     }
 
     public class SortedVector<T> where T: IComparable<T> 
@@ -198,7 +234,6 @@ namespace PongOut
         //        this.vector = vector;
         //    }
         //}
-
     }
 
 

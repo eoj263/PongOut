@@ -21,6 +21,8 @@ namespace PongOut
         double lastChange = 0;
         T defaultMenuState;
 
+        float timeoutDelay = 130;
+
         protected Menu(T defaultMenuState)
         {
             menu = new List<MenuItem<T>>();
@@ -41,8 +43,7 @@ namespace PongOut
         public T Update(GameTime gameTime)
         {
             KeyboardState kbs = Keyboard.GetState();
-
-            if (gameTime.TotalGameTime.TotalMilliseconds - lastChange > 130)
+            if (gameTime.TotalGameTime.TotalMilliseconds - lastChange >= timeoutDelay)
             {
                 if (kbs.IsKeyDown(Keys.Down))
                 {

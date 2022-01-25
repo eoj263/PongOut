@@ -18,11 +18,18 @@ namespace PongOut
         static Texture2D standTexture;
         static Texture2D gunTexture;
 
+        bool gunMode = false;
+
+
+        Gun gun;
+
         public float Health { get; private set; }
 
         public Player(Vector2 position) : base(position, null)
         {
             Health = DEFAULT_HEALTH;
+            gun = new Gun(this, 250, 30, 7);
+            GameElements.World.LoadAndAddObject(gun);
         }
 
         public override void OnCollision(PhysicsObject obj) {
@@ -51,13 +58,21 @@ namespace PongOut
         public override void Update(GameWindow gw, GameTime gt)
         {
             HandleInput();
-            // TODO Custom math and rotate
+            UpdateTexture();
+
             Rotation = MathF.Atan2(looking.Y, looking.X);
 
-            Velocity = Vector2.Transform(wantedRelativeMovementDirection * speed, Matrix.CreateRotationZ(Rotation));
+            Velocity = wantedRelativeMovementDirection * speed;
+            RestrictToScreenBounds();
+
+            //Velocity = Vector2.Transform(wantedRelativeMovementDirection * speed, Matrix.CreateRotationZ(Rotation));
             base.Update(gw, gt);
         }
 
+        private void UpdateTexture()
+        {
+            Texture = gunMode ? gunTexture : standTexture;
+        }
 
         Vector2 looking = new Vector2(1,0);
 
@@ -68,45 +83,63 @@ namespace PongOut
         Keys moveRightKey = Keys.D;
         public void HandleInput()
         {
-            KeyboardState kbs = Keyboard.GetState();
+            HandleKeyboardInput();
+            HandleMouseInput();
+        }
+
+        private void HandleMouseInput()
+        {
+            MouseState ms = Mouse.GetState();
+            var diff = -Position + ms.Position.ToVector2();
+
+            this.looking = Vector2.Normalize(diff);
+
+            if (gunMode && ms.LeftButton == ButtonState.Pressed)
+            {
+                gun.Use(this.looking);
+            }
+        }
+
+        private void HandleKeyboardInput()
+        {
             Vector2 wanted = Vector2.Zero;
-
+            KeyboardState kbs = Keyboard.GetState();
             if (kbs.IsKeyDown(moveLeftKey))
-            {
-                wanted.Y = -1;
-            }
-
-            if (kbs.IsKeyDown(moveRightKey))
-            {
-                wanted.Y = 1;
-            }
-
-            if (kbs.IsKeyDown(moveDownKey))
             {
                 wanted.X = -1;
             }
 
-            if (kbs.IsKeyDown(moveUpKey))
+            if (kbs.IsKeyDown(moveRightKey))
             {
                 wanted.X = 1;
             }
 
+            if (kbs.IsKeyDown(moveDownKey))
+            {
+                wanted.Y = 1;
+            }
 
-            if(wanted.X != 0 && wanted.Y != 0)
+            if (kbs.IsKeyDown(moveUpKey))
+            {
+                wanted.Y = -1;
+            }
+
+
+            if (wanted.X != 0 && wanted.Y != 0)
             {
                 wanted.Normalize();
             }
+
+            if(kbs.IsKeyDown(moveUpKey) && kbs.IsKeyDown(moveLeftKey) && kbs.IsKeyDown(moveRightKey))
+            {
+                wanted = Vector2.Zero;
+                gunMode = true;
+            } else gunMode = false;
+
             wantedRelativeMovementDirection = wanted;
-
-            MouseState ms = Mouse.GetState();
-
-            var diff = -Position + ms.Position.ToVector2();
-
-            this.looking = Vector2.Normalize(diff);
         }
 
         //IWeapon equipedWeapon;
-
         //public bool Equip(IWeapon weapon)
         //{
         //    equipedWeapon = weapon;
@@ -151,11 +184,14 @@ namespace PongOut
         }
     }
 
-
-    public class Bullet : PhysicsObject
+    public class Bullet : PhysicsObject, IContent
     {
+        static readonly string CONTENT_PATH= "bullet";
+        static readonly string DEFAULT_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defaultTexture");
 
-        static readonly float DEFAULT_SPEED = 10;
+        static Texture2D defaultTexture; 
+
+        static readonly float DEFAULT_SPEED = 4;
         static readonly float DEFAULT_DAMAGE_AMMOUNT = 20;
 
         static readonly float OFFSCREEN_DESTORY_DISTANCE = 20; 
@@ -163,17 +199,31 @@ namespace PongOut
 
         float dammageAmmount;
 
-        public Bullet(PhysicsObject shooter, Vector2 position, Vector2 direction, float? dammageAmmount, float? speed) : base(position, null) {
+        public Bullet(PhysicsObject shooter, Vector2 position, Vector2 direction, float? dammageAmmount = null, float? speed = null) : base(position, null) {
             if (!speed.HasValue)
                 speed = DEFAULT_SPEED;
+
             if (!dammageAmmount.HasValue)
                 dammageAmmount = DEFAULT_DAMAGE_AMMOUNT;
 
             this.shooter = shooter;
+
             Position = position;
             Rotation = Rotation;
+
             Velocity = Vector2.Normalize(direction) * speed.Value;
             this.dammageAmmount = dammageAmmount.Value;
+        }
+
+        public void LoadContent(ContentManager cm)
+        {
+            if(defaultTexture == null)
+            {
+                defaultTexture = cm.Load<Texture2D>(DEFAULT_TEXTURE_PATH);
+            }
+
+            Texture = defaultTexture;
+            CenterOrigin();
         }
 
         public override void OnCollision(PhysicsObject other)
@@ -245,6 +295,97 @@ namespace PongOut
         bool Damage(float ammount);
     }
 
+    public class Gun : GameObject
+    {
+
+        static float DEFAULT_COOLDOWN = 6000;
+
+        private float timeSinceUse;
+        private float cooldown;
+
+        private PhysicsObject user;
+
+        float? bulletDamage;
+        float? bulletSpeed; 
+
+        public Gun(PhysicsObject user, float? cooldown = null, float? bulletDamage = null, float? bulletSpeed = null)
+        {
+            this.user = user;
+
+            if (!cooldown.HasValue)
+                cooldown = DEFAULT_COOLDOWN;
+
+            this.cooldown = cooldown.Value;
+            timeSinceUse = this.cooldown;
+
+            this.bulletDamage = bulletDamage;
+            this.bulletSpeed = bulletSpeed;
+        }
+
+        public override void Update(GameWindow gw, GameTime gt)
+        {
+            timeSinceUse += gt.ElapsedGameTime.Milliseconds;
+        }
+
+        public bool Use(Vector2 facing) {
+            if (!AbleToFire())
+                return false;
+
+            Fire(facing);
+            timeSinceUse = 0;
+            return true;
+        }
+
+        public bool AbleToFire() {
+            if(timeSinceUse >= cooldown)
+                return true;
+
+            return false;
+        }
+
+        void Fire(Vector2 facing)
+        {
+            Bullet b = new Bullet(user, user.Position, facing, bulletDamage, bulletSpeed);
+            GameElements.World.LoadAndAddObject(b);
+        }
+    }
+
+
+    public class ShootingZombie : Zombie
+    {
+
+        public static new readonly string CONTENT_PATH = Path.Combine(Enemy.CONTENT_PATH, "shootingZombie");
+        public static readonly string TEXTURE_PATH = Path.Combine(CONTENT_PATH, "defaultTexture");
+
+        public static Texture2D defaultTexture;
+
+
+        Gun gun;
+        public ShootingZombie(Vector2 position, WorldObject target) : base(position, target)
+        {
+            gun = new Gun(this);
+            // TODO make so that the gun is removed when the zombie dies
+            GameElements.World.AddObject(gun);
+        }
+
+        public override void LoadContent(ContentManager cm)
+        {
+            if(defaultTexture == null)
+            {
+                defaultTexture = cm.Load<Texture2D>(TEXTURE_PATH);
+            }
+
+            Texture = defaultTexture;
+            CenterOrigin();
+        }
+
+        public override void Update(GameWindow gw, GameTime gt)
+        {
+            gun.Use(facing);
+            base.Update(gw, gt);
+        }
+    }
+
 
     public class Zombie : DamageableEnemy 
     {
@@ -257,7 +398,7 @@ namespace PongOut
         static Texture2D walk;
 
 
-        private Vector2 facing;
+        protected Vector2 facing;
         private WorldObject target;
 
         public Zombie(Vector2 position, WorldObject target): base(position, DEFAULT_HEALTH)
