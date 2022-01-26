@@ -54,7 +54,6 @@ namespace PongOut
 
         public string Text { get; set; } = "";
 
-
         public void LoadContent(ContentManager cm)
         {
             this.cm = cm;

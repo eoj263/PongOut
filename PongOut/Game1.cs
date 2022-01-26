@@ -8,7 +8,6 @@ namespace PongOut
     public class Game1 : Game
     {
         // Textures come from https://www.kenney.nl/assets/topdown-shooter
-
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         public Game1()
@@ -37,11 +36,12 @@ namespace PongOut
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-
             GameElements.State nextState = GameElements.CurrentState;
             switch (GameElements.CurrentState)
             {
                 case GameElements.State.Run:
+                    if (GameElements.StateChanged)
+                        GameElements.ResetWorld(Content, Window);
                     nextState = GameElements.RunUpdate(Content, Window, gameTime);
                     break;
                 case GameElements.State.Highscore:
@@ -49,6 +49,9 @@ namespace PongOut
                     break;
                 case GameElements.State.MainMenu:
                     nextState = GameElements.MainMenuUpdate(gameTime);
+                    break;
+                case GameElements.State.EnterHighScoreName:
+                    nextState = GameElements.HighScoreEnterNameUpdate(gameTime);
                     break;
                 case GameElements.State.Quit:
                     Exit();
@@ -73,6 +76,9 @@ namespace PongOut
                     break;
                 case GameElements.State.MainMenu:
                     GameElements.MainMenuDraw(_spriteBatch);
+                    break;
+                case GameElements.State.EnterHighScoreName:
+                    GameElements.HighScoreEnterNameDraw(_spriteBatch);
                     break;
                 case GameElements.State.Quit:
                     Exit();

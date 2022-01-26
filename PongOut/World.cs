@@ -17,20 +17,25 @@ namespace PongOut
         private SortedVector<int> worldObjects;
         private SortedVector<int> physicsObjects;
 
-
         private List<UIComponent> UIComponents;
 
         private int currentGameObjectId = 0;
 
         private Player player;
 
+        private ScreenText scoreText;
+
         private Queue<int> objectsToRemoveQueue = new Queue<int>();
         private Queue<object> objectsToAddQueue = new Queue<object>();
 
         public Vector2 Size { get; private set; }
 
+        public int CurrentScore => player.Score;
+
         public void Draw(SpriteBatch sb)
         {
+            scoreText.Draw(sb);
+
             for(int i = 0; i < worldObjects.Length; i++)
             {
                 int id = worldObjects[i];
@@ -41,16 +46,19 @@ namespace PongOut
         public void LoadInitialState(GameWindow window)
         {
             gameObjects = new Dictionary<int, GameObject>();
-            worldObjects = new SortedVector<int>();
-            physicsObjects = new SortedVector<int>();
+
+            worldObjects = new SortedVector<int>(false);
+            physicsObjects = new SortedVector<int>(false);
 
             UIComponents = new List<UIComponent>();
 
             Size = window.ClientBounds.Size.ToVector2();
 
-
             player = new Player(new Vector2(500, 200));
             LoadAndAddObject(player);
+
+            scoreText = new ScreenText(new Vector2(20, 20));
+            LoadObject(scoreText);
 
             ShootingZombie zombie2 = new ShootingZombie(new Vector2(100, 100), player);
             LoadAndAddObject(zombie2);
@@ -72,8 +80,7 @@ namespace PongOut
             physicsObjects.Remove(id);
         }
 
-
-        public void AddObject(object toAdd)
+        void AddObject(object toAdd)
         {
             if (inGameObjectItteration) {
                 QueueAddObject(toAdd);
@@ -99,7 +106,7 @@ namespace PongOut
             inGameObjectItteration = true;
             foreach(KeyValuePair<int, GameObject> kv in gameObjects)
             {
-                if (!kv.Value.IsAlive)
+                if (!kv.Value.IsAlive && !(kv.Value is Player))
                 {
                     RemoveObject(kv.Key);
                     continue;
@@ -110,6 +117,8 @@ namespace PongOut
             inGameObjectItteration = false;
 
             DoCollisions();
+
+            scoreText.Text = $"Poäng: {player.Score}";
 
             if (!player.IsAlive)
                 GameOver = true;
@@ -164,9 +173,13 @@ namespace PongOut
 
     public class SortedVector<T> where T: IComparable<T> 
     {
-        List<T> list; 
+        List<T> list;
+        bool allowDuplicates;
+
+        bool reverse;
         
-        public SortedVector(){
+        public SortedVector(bool allowDuplicates = true){
+            this.allowDuplicates = allowDuplicates;
             list = new List<T>();
         }
 
@@ -183,7 +196,7 @@ namespace PongOut
         public void Add(T obj)
         {
             int index = Find(obj);
-            if (index >= 0)
+            if (index >= 0 && !allowDuplicates)
                 throw new ArgumentException("Duplicate item");
             int insertAt = ~index;
 

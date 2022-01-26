@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace PongOut
 {
@@ -10,8 +11,13 @@ namespace PongOut
 
         public static bool DebugMode { get; private set; } = true;
 
-        public enum State { MainMenu, Run, Highscore, Quit };
+        public static HighScore highScore;
+        public enum State { MainMenu, Run, Highscore, EnterHighScoreName, Quit };
         public static State CurrentState = State.MainMenu;
+        public static State PreviousState;
+
+        public static bool StateChanged => CurrentState != PreviousState;
+
         public static World World { get; private set; }
 
         static DebugText debugText;
@@ -32,12 +38,17 @@ namespace PongOut
         }
         public static void Initialize()
         {
-            debugText = new DebugText(Vector2.One, 10);
-            LoadContentsOf(debugText);
+            highScore = new HighScore();
+            if (DebugMode)
+            {
+                debugText = new DebugText(Vector2.One, 10);
+                LoadContentsOf(debugText);
+            }
         }
 
-        public static void LoadWorld(ContentManager content, GameWindow window)
+        public static void ResetWorld(ContentManager content, GameWindow window)
         {
+            lastScore = 0;
             World = new World();
             World.LoadInitialState(window);
         }
@@ -47,7 +58,7 @@ namespace PongOut
         {
             GameElements.content = content;
             LoadMenu(content);
-            LoadWorld(content, window);
+            ResetWorld(content, window);
         }
 
         public static T LoadContentsOf<T>(T thing) where T : IContent
@@ -71,13 +82,15 @@ namespace PongOut
             DrawOverlay(sb);
         }
 
-
+        public static int lastScore { get; private set; }
+        
         public static State RunUpdate(ContentManager content, GameWindow window, GameTime gameTime)
         {
             World.Update(window, gameTime);
+            lastScore = World.CurrentScore;
 
             if (World.GameOver)
-                return State.MainMenu;
+                return State.EnterHighScoreName;
             return State.Run;
         }
 
@@ -105,10 +118,25 @@ namespace PongOut
         public static void HighScoreDraw(SpriteBatch sb)
         {
             DrawOverlay(sb);
+            highScore.ListDraw(sb);
         }
+
+        public static State HighScoreEnterNameUpdate(GameTime gt)
+        {
+            bool done = highScore.EnterNameUpdate(gt);
+            if (done)
+                return State.MainMenu; // TODO CHANGE TO HIGHSCORE
+            return State.EnterHighScoreName;
+        }
+        public static void HighScoreEnterNameDraw(SpriteBatch sb)
+        {
+            highScore.EnterNameDraw(sb);
+        }
+
 
         public static void SetState(State nextState)
         {
+            PreviousState = CurrentState;
             CurrentState = nextState;
         }
     }

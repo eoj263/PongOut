@@ -10,6 +10,8 @@ namespace PongOut
 {
     public class Player : PhysicsObject, IDamageable, IContent 
     {
+
+
         static readonly string CONTENT_PATH= "player";
         static readonly string STAND_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defualt/stand");
         static readonly string GUN_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defualt/gun");
@@ -20,9 +22,9 @@ namespace PongOut
 
         bool gunMode = false;
 
+        public int Score { get; set; } = 0;
 
         Gun gun;
-
         public float Health { get; private set; }
 
         public Player(Vector2 position) : base(position, null)
@@ -191,6 +193,7 @@ namespace PongOut
         public virtual void BeforeUse(ref float timeSinceUse) { 
         }
 
+
     }
 
 
@@ -220,6 +223,8 @@ namespace PongOut
     public abstract class Enemy : PhysicsObject, IContent 
     {
         public static readonly string CONTENT_PATH = "enemy";
+         
+        public int PointsWhenKilled { get; protected set; } = 1;
 
         protected Enemy(Vector2 position) : base(position, null)
         {
@@ -237,13 +242,42 @@ namespace PongOut
             Health = health;
         }
 
+
+        float timeAnimatingDamage = 0;
+        bool playingDamageAnimation = false;
+        protected void StartDamageAnimation() { 
+            playingDamageAnimation = true;
+            Color = Color.Red;
+            timeAnimatingDamage = 0;
+        }
+
+        protected void StopDamageAnimation()
+        {
+            playingDamageAnimation = false;
+            Color = Color.White;
+        }
+
         public bool Damage(float ammount)
         {
             Health -= ammount;
+            StartDamageAnimation();
             
             if(Health < 0)
                 IsAlive = false;
             return true;
+        }
+
+        public override void Update(GameWindow gw, GameTime gt)
+        {
+            if (playingDamageAnimation)
+            {
+                timeAnimatingDamage += gt.ElapsedGameTime.Milliseconds;
+
+                if(timeAnimatingDamage > 0.1f)
+                    StopDamageAnimation();
+            }
+
+            base.Update(gw, gt);
         }
     }
 
@@ -296,7 +330,16 @@ namespace PongOut
                 return;
 
             if (other is IDamageable)
-                (other as IDamageable).Damage(dammageAmmount);
+            {
+                bool damageDealt = (other as IDamageable).Damage(dammageAmmount);
+                if (damageDealt) { 
+                    IsAlive = false;
+                    if(shooter is Player && other is Enemy && !other.IsAlive)
+                    {
+                        (shooter as Player).Score += (other as Enemy).PointsWhenKilled;
+                    }
+                }
+            }
         }
 
         
@@ -426,9 +469,10 @@ namespace PongOut
         Gun gun;
         public ShootingZombie(Vector2 position, WorldObject target) : base(position, target)
         {
+            PointsWhenKilled = 2;
             gun = new Gun(this);
             // TODO make so that the gun is removed when the zombie dies
-            GameElements.World.AddObject(gun);
+            GameElements.World.LoadAndAddObject(gun);
         }
 
         public override void LoadContent(ContentManager cm)

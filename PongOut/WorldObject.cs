@@ -3,6 +3,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace PongOut
 {
+
+    /**
+     * Att GÖRA:
+     * 1. poängsystem
+     */
+
     public abstract class WorldObject : GameObject, IDrawable
     {
         protected Texture2D Texture { get; set; }
