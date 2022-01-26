@@ -154,6 +154,69 @@ namespace PongOut
         }
     }
 
+    public interface ICollector
+    {
+        /// <summary>
+        /// Collect an item
+        /// </summary>
+        /// <param name="c">The item to collect</param>
+        /// <returns>It the item was able to be collected</returns>
+        bool Collect(Collectable c);
+    }
+
+
+    public abstract class GunModifier {
+        public int Priority { get; private set; } = 0;
+
+        private Gun gun;
+
+        public GunModifier(Gun gun)
+        {
+            this.gun = gun;
+        }
+
+        public abstract void Apply(ref float cooldown, float? bulletDamage, float bulletSpeed);
+
+        //private float timeSinceUse;
+        //private float cooldown;
+
+        //private PhysicsObject user;
+
+        //float? bulletDamage;
+        //float? bulletSpeed; 
+
+
+
+
+        public virtual void BeforeUse(ref float timeSinceUse) { 
+        }
+
+    }
+
+
+    public class Collectable : PhysicsObject
+    {
+        public Collectable(Vector2 position) : base(position, null)
+        {
+            Position = position;
+        }
+
+        public override void OnCollision(PhysicsObject other)
+        {
+            // Could be fired if the item has already been collected
+            if (!IsAlive)
+                return;
+
+            if(other is ICollector)
+            {
+                bool collected = (other as ICollector).Collect(this);
+                if (collected)
+                    IsAlive = false;
+            }
+        }
+    }
+
+
     public abstract class Enemy : PhysicsObject, IContent 
     {
         public static readonly string CONTENT_PATH = "enemy";
