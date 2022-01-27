@@ -7,8 +7,71 @@ using System.Linq;
 
 namespace PongOut
 {
+
+    public class Spawner<T> : GameObject
+    {
+        Action<Vector2> spawn;
+        Func<Vector2> genSpawnLocation;
+
+        int spawnCount, targetSpawnCount;
+
+        float timeLeftToLive => maxTimeAlive - timeAlive;
+
+        float timeAlive = 0;
+        float timeToNextSpawn = 0;
+
+        Random rand = new Random();
+        float maxTimeAlive;
+        
+        public Spawner(Action<Vector2> spawn, Func<Vector2> genSpawnLocation, float maxTimeAlive, int targetSpawnCount)
+        {
+            this.spawn = spawn;
+
+            spawnCount = 0;
+            this.maxTimeAlive = maxTimeAlive;
+            this.targetSpawnCount= targetSpawnCount;
+            this.genSpawnLocation = genSpawnLocation;
+        }
+
+
+        const float Compensation = 2;
+
+
+        public float GenerateTimeToNextSpawn()
+        {
+
+            if(targetSpawnCount - spawnCount > 0) // Försök se till att rätt mängd saker spawnat innan tiden går ut
+                return (float)rand.NextDouble() * timeLeftToLive / (targetSpawnCount - spawnCount) * Compensation;
+
+            // Har vi spawnat fler enheter än vad som behövs
+            GameElements.WriteDebugLine("Using the other thing");
+            return (float)rand.NextDouble() * maxTimeAlive / targetSpawnCount * Compensation;
+
+        }
+
+        public override void Update(GameWindow gw, GameTime gt)
+        {
+            timeAlive += gt.ElapsedGameTime.Milliseconds;
+            timeToNextSpawn -= gt.ElapsedGameTime.Milliseconds;
+            if (timeToNextSpawn <= 0)
+            {
+                spawn(genSpawnLocation());
+                spawnCount++;
+
+                GameElements.WriteDebugLine("spawnCount: " + spawnCount);
+                
+                timeToNextSpawn = GenerateTimeToNextSpawn();
+            }
+            if (timeAlive >= maxTimeAlive)
+                IsAlive = false;
+        }
+    }
+
     public class World
     {
+
+        Random rand = new Random();
+
         public bool GameOver { get; private set; }
 
         // Each gameObject will have an id.
@@ -31,6 +94,41 @@ namespace PongOut
         public Vector2 Size { get; private set; }
 
         public int CurrentScore => player.Score;
+
+
+        public Vector2 RandomOffscreenCoordinate(float offset) {
+            int edge = rand.Next(4);
+
+            Vector2 location = Vector2.Zero;
+            switch (edge)
+            {
+                case 0: // Top
+                    location = new Vector2(RandomXOnScreenCoordinate(), -offset);
+                    break;
+                case 1: // Right 
+                    location = new Vector2(Size.X + offset, RandomYOnScreenCoordinate());
+                    break;
+                case 2: // Bottom 
+                    location = new Vector2(RandomXOnScreenCoordinate(), Size.Y + offset);
+                    break;
+                case 3: // Left 
+                    location = new Vector2(-offset, RandomYOnScreenCoordinate());
+                    break;
+
+            }
+
+            return location;
+        }
+
+        public float RandomXOnScreenCoordinate()
+        {
+            return (float)rand.NextDouble() * Size.X;
+        }
+        public float RandomYOnScreenCoordinate()
+        {
+            return (float)rand.NextDouble() * Size.Y;
+        }
+
 
         public void Draw(SpriteBatch sb)
         {
@@ -65,6 +163,10 @@ namespace PongOut
 
             Zombie zombie1 = new Zombie(new Vector2(300, 300), player);
             LoadAndAddObject(zombie1);
+
+            Spawner<Zombie> zombieSpawner = new Spawner<Zombie>((pos) =>
+                LoadAndAddObject(new Zombie(pos, player)), () => RandomOffscreenCoordinate(50), 30000, 30);
+            LoadAndAddObject(zombieSpawner);
         }
 
         public void LoadAndAddObject(object obj)
@@ -99,6 +201,8 @@ namespace PongOut
         }
 
         bool inGameObjectItteration = false;
+
+
         public void Update(GameWindow window, GameTime gameTime)
         {
             ProcessGameObjectQueues();
@@ -182,7 +286,6 @@ namespace PongOut
             this.allowDuplicates = allowDuplicates;
             list = new List<T>();
         }
-
         public int Length => list.Count; 
         
         public T this[int index] {
@@ -192,13 +295,14 @@ namespace PongOut
             }
         }
 
-
         public void Add(T obj)
         {
             int index = Find(obj);
             if (index >= 0 && !allowDuplicates)
                 throw new ArgumentException("Duplicate item");
-            int insertAt = ~index;
+            int insertAt = index;
+            if(insertAt < 0)
+                insertAt = ~index;
 
             list.Insert(insertAt, obj);
         }
@@ -207,7 +311,6 @@ namespace PongOut
         {
             return list.BinarySearch(obj);
         }
-
 
         public bool Remove(T obj)
         {
@@ -218,6 +321,7 @@ namespace PongOut
             list.RemoveAt(idx);
             return true;
         }
+
         //private class SortedVectorEnumerator : IEnumerator<T>
         //{
 
@@ -253,21 +357,21 @@ namespace PongOut
     public class DebugText : ScreenText
     {
 
-        Stack<string> buffer;
+        Queue<string> buffer;
         private int bufferSize;
 
 
         public DebugText(Vector2 position, int bufferSize) : base(position)
         {
             this.bufferSize = bufferSize;
-            buffer = new Stack<string>(bufferSize);
+            buffer = new Queue<string>(bufferSize);
         }
 
         public void Log(string message)
         {
-            buffer.Push(message);
+            buffer.Enqueue(message);
             while (buffer.Count > bufferSize)
-                buffer.Pop();
+                buffer.Dequeue();
         }
 
         public override void Draw(SpriteBatch sb)

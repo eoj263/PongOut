@@ -40,7 +40,7 @@ namespace PongOut
             menu.Add(created);
         }
 
-        public T Update(GameTime gameTime)
+        public virtual T Update(GameTime gameTime)
         {
             KeyboardState kbs = Keyboard.GetState();
             if (gameTime.TotalGameTime.TotalMilliseconds - lastChange >= timeoutDelay)

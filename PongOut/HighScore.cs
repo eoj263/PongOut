@@ -33,14 +33,22 @@ namespace PongOut
             GameElements.LoadContentsOf(pointsText);
             GameElements.LoadContentsOf(infoText);
 
-            infoText.Text = "Skriv in ditt namn.\nFör å, ä och ö tryck på knapparna 1, 2 och 3";
+            infoText.Text = "För å, ä och ö tryck på knapparna 1, 2 och 3\nTryck på ENTER när du är klar";
+            UpdatePreview();
         }
+
+        void AddScore(string name, int score)
+        {
+            this.scores.Add(new HighScoreItem(name, score));
+            SaveToFile();
+        }
+
 
         public void SaveToFile()
         {
             StringBuilder builder = new StringBuilder();
             for(int i = 0; i < scores.Length && i < MAX_SAVED_SCORES; i++) {
-                builder.Append(scores[i]);
+                builder.AppendLine(scores[i].ToSaveString());
             }
 
             using(var fs = new StreamWriter(SCORES_SAVE_PATH))
@@ -63,11 +71,13 @@ namespace PongOut
             KeyboardState kbs = Keyboard.GetState();
             if(kbs.GetPressedKeyCount() == 0)
             {
+                lastKeyPressed = Keys.None;
                 return false;
             }
 
             if (kbs.IsKeyDown(Keys.Enter))
             {
+                AddScore(name, GameElements.lastScore);
                 return true;
             }
 
@@ -84,17 +94,23 @@ namespace PongOut
                 timeSincePress = 0;
             }
 
-            // FLYTTA 
+            if (name.Length > MAX_CHARS)
+                GameElements.FlashMessage(new FlashedMessage("Du har redan uppnått max antal tecken"));
+
             name = name.Substring(0, Math.Min(name.Length, MAX_CHARS));
-            charCountText.Text = $"{name.Length}/{MAX_CHARS}";
-
-            charCountText.Color = MAX_CHARS == name.Length ? Color.Red : Color.White;
-
-            namePrevewText.Text = $"Namn: {name}";
-
-
+            UpdatePreview();
             return false;
         }
+
+        /// <summary>
+        /// Uppdaterar char count texten och namn previewn
+        /// </summary>
+        private void UpdatePreview() { 
+            charCountText.Text = $"{name.Length}/{MAX_CHARS}";
+            charCountText.Color = MAX_CHARS == name.Length ? Color.Red : Color.White;
+            namePrevewText.Text = $"Ditt namn: {name}";
+        }
+
 
         public bool TryRegisterKey(string keyName)
         {
@@ -120,7 +136,11 @@ namespace PongOut
             }
 
             if (keyName.Length != 1)
+            {
+                // Typ en bug här ish ( Meddelandet skickas väldigt många gånger )
+                GameElements.FlashMessage(new FlashedMessage("Okänd knapp :'("));
                 return false;
+            }
 
             char key = keyName[0];
             if (!allowedKeys.Contains(key))
@@ -147,22 +167,29 @@ namespace PongOut
         public void LoadFromFile()
         {
             scores = new SortedVector<HighScoreItem>();
-            using (var reader = new StreamReader(SCORES_SAVE_PATH)) {
-                while (!reader.EndOfStream)
-                {
-                    HighScoreItem.FromSaveString(reader.ReadLine());
+            try
+            {
+                using (var reader = new StreamReader(SCORES_SAVE_PATH)) {
+                    while (!reader.EndOfStream)
+                    {
+                        scores.Add(HighScoreItem.FromSaveString(reader.ReadLine()));
+                    }
                 }
-            }
+            } catch(IOException e) {
+                GameElements.WriteDebugLine(e.Message);
+            } // Filen finns förmodligen inte.
         }
 
         SortedVector<HighScoreItem> scores;
 
         public void ListDraw(SpriteBatch sb)
         {
+            highScoreListText.Text = "";
             for(int i = 0; i < scores.Length; i++)
             {
-                highScoreListText.Text += scores[i];
+                highScoreListText.Text += $"{scores[i]}\n";
             }
+
             highScoreListText.Draw(sb);
         }
     }
@@ -193,15 +220,8 @@ namespace PongOut
             return new HighScoreItem(name, score);
         }
 
-        private void SanitizeName()
-        {
-            Name = Name.Remove('\t');
-            Name = Name.Remove('\n');
-        }
-
         public string ToSaveString()
         {
-            SanitizeName();
             return $"{Name.Trim()}\t{Score}";
         }
 
@@ -212,8 +232,9 @@ namespace PongOut
 
         public override string ToString()
         {
-            return $"{Name}: {Score}";
+            return $"{Score} poäng av: {Name}";
         }
+
     }
 }
 //class HSItem

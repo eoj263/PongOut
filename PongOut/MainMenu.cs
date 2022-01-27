@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System.IO;
 
 namespace PongOut
@@ -26,6 +28,14 @@ namespace PongOut
             AddItem(startTexture, GameElements.State.Run);
             AddItem(highscoreTexture, GameElements.State.Highscore);
             AddItem(exitTexture, GameElements.State.Quit);
+        }
+
+        public override GameElements.State Update(GameTime gameTime)
+        {
+            KeyboardState kbs = Keyboard.GetState();
+            if (kbs.IsKeyDown(Keys.Escape))
+                return GameElements.State.Quit;
+            return base.Update(gameTime);
         }
     }
 }

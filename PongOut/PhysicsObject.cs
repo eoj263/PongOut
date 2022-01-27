@@ -8,15 +8,19 @@ namespace PongOut
 
     public abstract class PhysicsObject : MovingObject
     {
-        //[Flags]
-        //enum CollisionLayers
-        //{
-        //    Player,
-        //    Enemy,
-        //    Collectable,
-        //    Bullet,
-        //}
-        public bool HitboxActive { get; protected set; } = true;
+        [Flags]
+        public enum CollisionLayers
+        {
+            Default,
+            World,
+            PlayerEnemy,
+            PlayerCollectable,
+            Collectable,
+            Bullet,
+        }
+
+        public CollisionLayers ActiveCollisionLayer { get; protected set; }
+        //public CollisionLayers CollidesWithLayers { get; set; }
 
         protected PhysicsObject(Vector2 position, Texture2D texture = null) : base(position, texture)
         {
@@ -53,7 +57,7 @@ namespace PongOut
 
         public bool CheckCollision(PhysicsObject other)
         {
-            if (!other.HitboxActive || !HitboxActive)
+            if ((ActiveCollisionLayer & other.ActiveCollisionLayer) == 0)
                 return false;
 
             return Rect.Intersects(other.Rect);

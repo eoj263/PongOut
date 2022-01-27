@@ -5,6 +5,13 @@ using System.Collections;
 
 namespace PongOut
 {
+
+    // TODO 
+    // Bolders
+    // Rundor
+    // Polish
+    // Dokumentation
+
     public class Game1 : Game
     {
         // Textures come from https://www.kenney.nl/assets/topdown-shooter
@@ -33,9 +40,6 @@ namespace PongOut
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
             GameElements.State nextState = GameElements.CurrentState;
             switch (GameElements.CurrentState)
             {
@@ -58,7 +62,9 @@ namespace PongOut
                     break;
             }
 
+            GameElements.UpdateOverlay(gameTime);
             GameElements.SetState(nextState);
+
             base.Update(gameTime);
         }
 
@@ -84,6 +90,8 @@ namespace PongOut
                     Exit();
                     break;
             }
+            GameElements.DrawOverlay(_spriteBatch);
+
             _spriteBatch.End();
             base.Draw(gameTime);
         }

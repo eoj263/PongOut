@@ -10,9 +10,7 @@ namespace PongOut
 {
     public class Player : PhysicsObject, IDamageable, IContent 
     {
-
-
-        static readonly string CONTENT_PATH= "player";
+        static readonly string CONTENT_PATH = "player";
         static readonly string STAND_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defualt/stand");
         static readonly string GUN_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defualt/gun");
         static readonly float DEFAULT_HEALTH = 30;
@@ -24,7 +22,7 @@ namespace PongOut
 
         public int Score { get; set; } = 0;
 
-        Gun gun;
+        Gun gun; 
         public float Health { get; private set; }
 
         public Player(Vector2 position) : base(position, null)
@@ -32,10 +30,10 @@ namespace PongOut
             Health = DEFAULT_HEALTH;
             gun = new Gun(this, 250, 30, 7);
             GameElements.World.LoadAndAddObject(gun);
+            ActiveCollisionLayer = 0;
         }
 
-        public override void OnCollision(PhysicsObject obj) {
-        }
+        public override void OnCollision(PhysicsObject obj) {}
 
         public void LoadContent(ContentManager cm)
         {
@@ -67,7 +65,6 @@ namespace PongOut
             Velocity = wantedRelativeMovementDirection * speed;
             RestrictToScreenBounds();
 
-            //Velocity = Vector2.Transform(wantedRelativeMovementDirection * speed, Matrix.CreateRotationZ(Rotation));
             base.Update(gw, gt);
         }
 
@@ -77,7 +74,6 @@ namespace PongOut
         }
 
         Vector2 looking = new Vector2(1,0);
-
 
         Keys moveUpKey = Keys.W;
         Keys moveDownKey = Keys.S;
@@ -228,6 +224,7 @@ namespace PongOut
 
         protected Enemy(Vector2 position) : base(position, null)
         {
+            this.ActiveCollisionLayer |= CollisionLayers.PlayerEnemy | CollisionLayers.Collectable | CollisionLayers.Bullet;
         }
 
         public abstract void LoadContent(ContentManager cm);
@@ -310,6 +307,8 @@ namespace PongOut
 
             Velocity = Vector2.Normalize(direction) * speed.Value;
             this.dammageAmmount = dammageAmmount.Value;
+
+            ActiveCollisionLayer = CollisionLayers.Bullet;
         }
 
         public void LoadContent(ContentManager cm)

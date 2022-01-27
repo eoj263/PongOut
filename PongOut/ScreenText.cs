@@ -60,7 +60,6 @@ namespace PongOut
         public override void Draw(SpriteBatch sb)
         {
             sb.DrawString(font, Text, position, Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 1);
-            //sb.DrawString(font, Text, position, Color.White);
         }
 
         public string Text { get; set; } = "";
