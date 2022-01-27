@@ -5,10 +5,11 @@ using System.IO;
 
 namespace PongOut
 {
-    public class ScreenText : UIComponent, IContent
-    {
-        public static readonly string FONT_CONTENT = "fonts";
-        public static readonly string DEFAULT_FONT_NAME = "default";
+    public class ScreenText : UIComponent, IContent {
+        public const string FONT_CONTENT = "fonts";
+        public const string DEFAULT_FONT_NAME = "default";
+        public const int DEFAULT_FONT_SCALE = 1;
+        public static readonly Color DEFAULT_COLOR = Color.White;
 
         private ContentManager cm;
 
@@ -18,7 +19,16 @@ namespace PongOut
 
         private Vector2 position;
 
-        public ScreenText(Vector2 position, string fontName = default) {
+        int Scale;
+
+        public Color Color { get; set; }
+        public ScreenText(Vector2 position, int fontScale = DEFAULT_FONT_SCALE, Color? color = null, string fontName = default) {
+            if(!color.HasValue)
+                color = DEFAULT_COLOR;
+
+            Color = color.Value;
+
+            this.Scale = fontScale;
             this.position = position;
 
             if (fontName == null) {
@@ -49,7 +59,8 @@ namespace PongOut
 
         public override void Draw(SpriteBatch sb)
         {
-            sb.DrawString(font, Text, position, Color.White);
+            sb.DrawString(font, Text, position, Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 1);
+            //sb.DrawString(font, Text, position, Color.White);
         }
 
         public string Text { get; set; } = "";

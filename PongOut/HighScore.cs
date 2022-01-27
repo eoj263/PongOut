@@ -10,17 +10,30 @@ namespace PongOut
 {
     public class HighScore
     {
-        public static readonly string SCORES_SAVE_PATH = "highScores.txt";
-        public static readonly int MAX_SAVED_SCORES = 500;
+        public const string SCORES_SAVE_PATH = "highScores.txt";
+        public const int MAX_SAVED_SCORES = 500;
 
+        public const int MAX_CHARS = 12;
+
+        ScreenText charCountText;
+        ScreenText pointsText;
+        ScreenText infoText;
 
         public HighScore()
         {
             highScoreListText = new ScreenText(new Vector2(200, 200));
-            namePrevewText = new ScreenText(new Vector2(350, 350));
+            namePrevewText = new ScreenText(new Vector2(300, 350));
+            charCountText = new ScreenText(new Vector2(490, 350));
+            pointsText = new ScreenText(new Vector2(300, 200));
+            infoText = new ScreenText(new Vector2(20, 20));
 
             GameElements.LoadContentsOf(highScoreListText);
             GameElements.LoadContentsOf(namePrevewText);
+            GameElements.LoadContentsOf(charCountText);
+            GameElements.LoadContentsOf(pointsText);
+            GameElements.LoadContentsOf(infoText);
+
+            infoText.Text = "Skriv in ditt namn.\nFör å, ä och ö tryck på knapparna 1, 2 och 3";
         }
 
         public void SaveToFile()
@@ -39,7 +52,6 @@ namespace PongOut
 
         Keys lastKeyPressed;
         float timeSincePress = 0;
-
         string name = "";
 
         readonly string allowedKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ ";
@@ -59,30 +71,65 @@ namespace PongOut
                 return true;
             }
 
-            if (kbs.IsKeyDown(Keys.Back))
+            Keys keyPressed = kbs.GetPressedKeys()[0];
+            string keyName = keyPressed.ToString();
+
+            if (keyPressed == lastKeyPressed && timeSincePress < 150)
+                return false;
+
+            bool wasValidKey = TryRegisterKey(keyName);
+            if (wasValidKey)
             {
-               name = name.Substring(name.Length -1);
-                timeSincePress = 0;
-                lastKeyPressed = Keys.Back;
-            } else
-            {
-                Keys keyPressed = kbs.GetPressedKeys()[0];
-                char key = keyPressed.ToString()[0];
-
-                if (keyPressed == lastKeyPressed && timeSincePress < 150)
-                    return false;
-
-                if (keyPressed == Keys.Space)
-                    name += " ";
-                else if (allowedKeys.Contains(key))
-                    name += key;
-
                 lastKeyPressed = keyPressed;
                 timeSincePress = 0;
             }
 
+            // FLYTTA 
+            name = name.Substring(0, Math.Min(name.Length, MAX_CHARS));
+            charCountText.Text = $"{name.Length}/{MAX_CHARS}";
+
+            charCountText.Color = MAX_CHARS == name.Length ? Color.Red : Color.White;
+
+            namePrevewText.Text = $"Namn: {name}";
+
+
             return false;
         }
+
+        public bool TryRegisterKey(string keyName)
+        {
+            switch (keyName) {
+                case "Back":
+                    if(name.Length > 0)
+                        name = name.Substring(0, name.Length - 1);
+                    return true;
+                case "Space":
+                    name += " ";
+                    return true;
+
+                // The following exist because the letters Å, Ä and Ö are not properly registered by monogame
+                case "D1": // Digit 1
+                    name += "Å";
+                    return true;
+                case "D2": // Digit 2
+                    name += "Ä";
+                    return true;
+                case "D3": // Digit 3
+                    name += "Ö";
+                    return true;
+            }
+
+            if (keyName.Length != 1)
+                return false;
+
+            char key = keyName[0];
+            if (!allowedKeys.Contains(key))
+                return false;
+
+            name += key;
+            return true;
+        }
+
 
         ScreenText highScoreListText;
 
@@ -90,10 +137,10 @@ namespace PongOut
 
         public void EnterNameDraw(SpriteBatch sb)
         {
-            namePrevewText.Text = $"Du har skrivigt: {name}";
             namePrevewText.Draw(sb);
-            //screenText.Text = $"Du har skrivigt: {name}";
-            //screenText.Draw(sb);
+            charCountText.Draw(sb);
+            pointsText.Draw(sb);
+            infoText.Draw(sb);
         }
 
 
