@@ -19,8 +19,10 @@ namespace PongOut
             Bullet,
         }
 
+        /// <summary>
+        /// Only things that have at least one layer in common will collide. If there are no mutual layers, there will be no collision
+        /// </summary>
         public CollisionLayers ActiveCollisionLayer { get; protected set; }
-        //public CollisionLayers CollidesWithLayers { get; set; }
 
         protected PhysicsObject(Vector2 position, Texture2D texture = null) : base(position, texture)
         {
@@ -32,6 +34,9 @@ namespace PongOut
             get => new Rectangle(Position.ToPoint(), Texture.Bounds.Size);
         }
 
+        /// <summary>
+        /// Restricts movement to within the screen bounds
+        /// </summary>
         protected void RestrictToScreenBounds() { 
             if(Position.X < 0 && Velocity.X < 0)
             {
@@ -53,6 +58,10 @@ namespace PongOut
             }
         }
 
+        /// <summary>
+        /// Is called by 
+        /// </summary>
+        /// <param name="other"></param>
         public abstract void OnCollision(PhysicsObject other);
 
         public bool CheckCollision(PhysicsObject other)
@@ -68,6 +77,9 @@ namespace PongOut
             base.Update(gw, gt);
         }
 
+        /// <summary>
+        /// Disbatches all the queued collision events. Calls OnCollisions(collision) for each queued collision
+        /// </summary>
         public void DispatchCollisions()
         {
             while(collidingWith.Count > 0)
@@ -77,6 +89,10 @@ namespace PongOut
         }
 
         Queue<PhysicsObject> collidingWith;
+        /// <summary>
+        /// Registers (queues) a collision event. The collision is then processed when DisbatchCollisions is called
+        /// </summary>
+        /// <param name="with"></param>
         public void AddCollision(PhysicsObject with)
         {
             collidingWith.Enqueue(with);

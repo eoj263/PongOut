@@ -7,7 +7,6 @@ namespace PongOut
 {
 
     // TODO 
-    // Bolders
     // Rundor
     // Polish
     // Dokumentation
@@ -94,6 +93,12 @@ namespace PongOut
 
             _spriteBatch.End();
             base.Draw(gameTime);
+        }
+
+        protected override void UnloadContent()
+        {
+            GameElements.highScore.SaveToFile();
+            base.UnloadContent();
         }
     }
 }

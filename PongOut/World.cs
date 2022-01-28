@@ -8,38 +8,31 @@ using System.Linq;
 namespace PongOut
 {
 
-    public class Spawner<T> : GameObject
-    {
-        Action<Vector2> spawn;
-        Func<Vector2> genSpawnLocation;
 
-        int spawnCount, targetSpawnCount;
+    public class TemporarySpawner : Spawner
+    {
+        const float Compensation = 2;
+        int targetSpawnCount;
 
         float timeLeftToLive => maxTimeAlive - timeAlive;
-
-        float timeAlive = 0;
-        float timeToNextSpawn = 0;
-
-        Random rand = new Random();
         float maxTimeAlive;
-        
-        public Spawner(Action<Vector2> spawn, Func<Vector2> genSpawnLocation, float maxTimeAlive, int targetSpawnCount)
-        {
-            this.spawn = spawn;
 
+        /// <summary>
+        /// Creates a spawner that should spawn a certain ammount of things and be destroyed after a certain time
+        /// </summary>
+        /// <param name="spawn"></param>
+        /// <param name="genSpawnLocation"></param>
+        /// <param name="maxTimeAlive"></param>
+        /// <param name="targetSpawnCount"></param>
+        public TemporarySpawner(Action<Vector2> spawn, Func<Vector2> genSpawnLocation, float maxTimeAlive, int targetSpawnCount) : base(spawn, genSpawnLocation)
+        {
             spawnCount = 0;
             this.maxTimeAlive = maxTimeAlive;
             this.targetSpawnCount= targetSpawnCount;
-            this.genSpawnLocation = genSpawnLocation;
         }
-
-
-        const float Compensation = 2;
-
 
         public float GenerateTimeToNextSpawn()
         {
-
             if(targetSpawnCount - spawnCount > 0) // Försök se till att rätt mängd saker spawnat innan tiden går ut
                 return (float)rand.NextDouble() * timeLeftToLive / (targetSpawnCount - spawnCount) * Compensation;
 
@@ -47,6 +40,59 @@ namespace PongOut
             GameElements.WriteDebugLine("Using the other thing");
             return (float)rand.NextDouble() * maxTimeAlive / targetSpawnCount * Compensation;
 
+        }
+    }
+
+    public class PersistentSpawner : Spawner
+    {
+        private float minSpawnTime, maxSpawnTime;
+
+        /// <summary>
+        /// Generates a spawner that will persist untill killed by external sources. 
+        /// </summary>
+        /// <param name="spawn"></param>
+        /// <param name="genSpawnLocation"></param>
+        /// <param name="minSpawnTime">The least ammount of time between spawns</param>
+        /// <param name="maxSpawnTime">The max ammount of time between spawns</param>
+        public PersistentSpawner(Action<Vector2> spawn, Func<Vector2> genSpawnLocation, float minSpawnTime, float maxSpawnTime) : base(spawn, genSpawnLocation)
+        {
+            if (minSpawnTime > maxSpawnTime)
+                throw new ArgumentException("Max spawn time cannot be greater than min spawntime");
+
+            this.minSpawnTime = minSpawnTime;
+            this.maxSpawnTime = maxSpawnTime;
+        }
+
+        protected override float GenerateTimeToNextSpawn()
+        {
+            return (float)rand.NextDouble() * (maxSpawnTime - minSpawnTime) + minSpawnTime;
+        }
+    }
+
+
+    public abstract class Spawner : GameObject
+    {
+        Action<Vector2> spawn;
+        Func<Vector2> genSpawnLocation;
+
+        protected float timeAlive = 0;
+        float timeToNextSpawn = 0;
+
+        protected int spawnCount;
+
+        protected Random rand = new Random();
+        
+        /// <summary>
+        /// Creates a spawner that should spawn a certain ammount of things and be destroyed after a certain time
+        /// </summary>
+        /// <param name="spawn"></param>
+        /// <param name="genSpawnLocation"></param>
+        /// <param name="maxTimeAlive"></param>
+        /// <param name="targetSpawnCount"></param>
+        public Spawner(Action<Vector2> spawn, Func<Vector2> genSpawnLocation)
+        {
+            this.spawn = spawn;
+            this.genSpawnLocation = genSpawnLocation;
         }
 
         public override void Update(GameWindow gw, GameTime gt)
@@ -59,12 +105,11 @@ namespace PongOut
                 spawnCount++;
 
                 GameElements.WriteDebugLine("spawnCount: " + spawnCount);
-                
                 timeToNextSpawn = GenerateTimeToNextSpawn();
             }
-            if (timeAlive >= maxTimeAlive)
-                IsAlive = false;
         }
+
+        protected abstract float GenerateTimeToNextSpawn();
     }
 
     public class World
@@ -92,6 +137,7 @@ namespace PongOut
         private Queue<object> objectsToAddQueue = new Queue<object>();
 
         public Vector2 Size { get; private set; }
+
 
         public int CurrentScore => player.Score;
 
@@ -280,8 +326,6 @@ namespace PongOut
         List<T> list;
         bool allowDuplicates;
 
-        bool reverse;
-        
         public SortedVector(bool allowDuplicates = true){
             this.allowDuplicates = allowDuplicates;
             list = new List<T>();

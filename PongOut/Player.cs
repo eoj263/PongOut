@@ -8,12 +8,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace PongOut
 {
-    public class Player : PhysicsObject, IDamageable, IContent 
+    public class Player : PhysicsObject, IDamageable, IContent, IHealable
     {
         static readonly string CONTENT_PATH = "player";
         static readonly string STAND_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defualt/stand");
         static readonly string GUN_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defualt/gun");
-        static readonly float DEFAULT_HEALTH = 30;
+        const float DEFAULT_MAX_HEALTH = 30;
 
         static Texture2D standTexture;
         static Texture2D gunTexture;
@@ -22,15 +22,19 @@ namespace PongOut
 
         public int Score { get; set; } = 0;
 
-        Gun gun; 
+        public float maxHealth { get; private set; }
+
+        Gun gun;
         public float Health { get; private set; }
 
-        public Player(Vector2 position) : base(position, null)
+        public Player(Vector2 position, float maxHealth = DEFAULT_MAX_HEALTH) : base(position, null)
         {
-            Health = DEFAULT_HEALTH;
+            this.maxHealth = maxHealth;
+            Health = maxHealth;
+
             gun = new Gun(this, 250, 30, 7);
             GameElements.World.LoadAndAddObject(gun);
-            ActiveCollisionLayer = 0;
+            ActiveCollisionLayer |= CollisionLayers.Bullet | CollisionLayers.Collectable | CollisionLayers.PlayerEnemy | CollisionLayers.PlayerCollectable;
         }
 
         public override void OnCollision(PhysicsObject obj) {}
@@ -41,8 +45,8 @@ namespace PongOut
             {
                 gunTexture = cm.Load<Texture2D>(GUN_TEXTURE_PATH);
             }
-            
-            if(standTexture == null)
+
+            if (standTexture == null)
             {
                 standTexture = cm.Load<Texture2D>(STAND_TEXTURE_PATH);
             }
@@ -73,7 +77,7 @@ namespace PongOut
             Texture = gunMode ? gunTexture : standTexture;
         }
 
-        Vector2 looking = new Vector2(1,0);
+        Vector2 looking = new Vector2(1, 0);
 
         Keys moveUpKey = Keys.W;
         Keys moveDownKey = Keys.S;
@@ -128,7 +132,7 @@ namespace PongOut
                 wanted.Normalize();
             }
 
-            if(kbs.IsKeyDown(moveUpKey) && kbs.IsKeyDown(moveLeftKey) && kbs.IsKeyDown(moveRightKey))
+            if (kbs.IsKeyDown(moveUpKey) && kbs.IsKeyDown(moveLeftKey) && kbs.IsKeyDown(moveRightKey))
             {
                 wanted = Vector2.Zero;
                 gunMode = true;
@@ -137,18 +141,22 @@ namespace PongOut
             wantedRelativeMovementDirection = wanted;
         }
 
-        //IWeapon equipedWeapon;
-        //public bool Equip(IWeapon weapon)
-        //{
-        //    equipedWeapon = weapon;
-        //}
-
         public bool Damage(float ammount)
         {
             Health -= ammount;
-            if (Health < 0)
-                IsAlive = false;
-            return IsAlive;
+            return true;
+        }
+
+        public float Heal(float ammount)
+        {
+            float toHeal = Math.Min(maxHealth - Health, ammount);
+            Health += toHeal;
+            return toHeal;
+        }
+
+        public void IncreaseMaxHealth(float ammount)
+        {
+            maxHealth += ammount;
         }
     }
 
@@ -163,201 +171,69 @@ namespace PongOut
     }
 
 
-    public abstract class GunModifier {
-        public int Priority { get; private set; } = 0;
-
-        private Gun gun;
-
-        public GunModifier(Gun gun)
-        {
-            this.gun = gun;
-        }
-
-        public abstract void Apply(ref float cooldown, float? bulletDamage, float bulletSpeed);
-
-        //private float timeSinceUse;
-        //private float cooldown;
-
-        //private PhysicsObject user;
-
-        //float? bulletDamage;
-        //float? bulletSpeed; 
-
-
-
-
-        public virtual void BeforeUse(ref float timeSinceUse) { 
-        }
-
-
-    }
-
-
-    public class Collectable : PhysicsObject
+    public class Coin : PlayerCollectable
     {
-        public Collectable(Vector2 position) : base(position, null)
-        {
-            Position = position;
+        const int DEFAULT_SCORE_TO_GIVE = 4; 
+        int scoreToGive;
+        public Coin(Vector2 position, int scoreAdd = DEFAULT_SCORE_TO_GIVE) : base(position) {
+            this.scoreToGive = scoreAdd;
         }
 
-        public override void OnCollision(PhysicsObject other)
+        protected override void OnCollected(Player p)
         {
-            // Could be fired if the item has already been collected
-            if (!IsAlive)
-                return;
-
-            if(other is ICollector)
-            {
-                bool collected = (other as ICollector).Collect(this);
-                if (collected)
-                    IsAlive = false;
-            }
+            p.Score += scoreToGive;
         }
     }
 
-
-    public abstract class Enemy : PhysicsObject, IContent 
+    public abstract class PlayerCollectable : Collectable
     {
-        public static readonly string CONTENT_PATH = "enemy";
-         
-        public int PointsWhenKilled { get; protected set; } = 1;
-
-        protected Enemy(Vector2 position) : base(position, null)
+        protected PlayerCollectable(Vector2 position) : base(position)
         {
-            this.ActiveCollisionLayer |= CollisionLayers.PlayerEnemy | CollisionLayers.Collectable | CollisionLayers.Bullet;
+            ActiveCollisionLayer = CollisionLayers.PlayerCollectable;
         }
 
-        public abstract void LoadContent(ContentManager cm);
+        protected override sealed void OnCollected(ICollector collector)
+        {
+            OnCollected(collector as Player);
+        }
+
+        protected abstract void OnCollected(Player p);
     }
 
-    public abstract class DamageableEnemy : Enemy, IDamageable
+    public class MaxHealthRaiser : PlayerCollectable
     {
-        public float Health { get; private set; }
+        const float DEFAULT_AMMOUNT = 5;
 
-        public DamageableEnemy(Vector2 position, float health) : base(position)
+        float ammount;
+        public MaxHealthRaiser(Vector2 position, float ammount = DEFAULT_AMMOUNT) : base(position)
         {
-            Health = health;
+            this.ammount = ammount;
         }
 
-
-        float timeAnimatingDamage = 0;
-        bool playingDamageAnimation = false;
-        protected void StartDamageAnimation() { 
-            playingDamageAnimation = true;
-            Color = Color.Red;
-            timeAnimatingDamage = 0;
-        }
-
-        protected void StopDamageAnimation()
+        protected override void OnCollected(Player p)
         {
-            playingDamageAnimation = false;
-            Color = Color.White;
-        }
-
-        public bool Damage(float ammount)
-        {
-            Health -= ammount;
-            StartDamageAnimation();
-            
-            if(Health < 0)
-                IsAlive = false;
-            return true;
-        }
-
-        public override void Update(GameWindow gw, GameTime gt)
-        {
-            if (playingDamageAnimation)
-            {
-                timeAnimatingDamage += gt.ElapsedGameTime.Milliseconds;
-
-                if(timeAnimatingDamage > 0.1f)
-                    StopDamageAnimation();
-            }
-
-            base.Update(gw, gt);
+            p.IncreaseMaxHealth(ammount);
         }
     }
 
-    public class Bullet : PhysicsObject, IContent
+
+    public class HealthPack : PlayerCollectable
     {
-        static readonly string CONTENT_PATH= "bullet";
-        static readonly string DEFAULT_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defaultTexture");
 
-        static Texture2D defaultTexture; 
+        const float DEFAULT_HEAL_AMMOUNT = 10;
 
-        static readonly float DEFAULT_SPEED = 4;
-        static readonly float DEFAULT_DAMAGE_AMMOUNT = 20;
-
-        static readonly float OFFSCREEN_DESTORY_DISTANCE = 20; 
-        PhysicsObject shooter;
-
-        float dammageAmmount;
-
-        public Bullet(PhysicsObject shooter, Vector2 position, Vector2 direction, float? dammageAmmount = null, float? speed = null) : base(position, null) {
-            if (!speed.HasValue)
-                speed = DEFAULT_SPEED;
-
-            if (!dammageAmmount.HasValue)
-                dammageAmmount = DEFAULT_DAMAGE_AMMOUNT;
-
-            this.shooter = shooter;
-
-            Position = position;
-            Rotation = Rotation;
-
-            Velocity = Vector2.Normalize(direction) * speed.Value;
-            this.dammageAmmount = dammageAmmount.Value;
-
-            ActiveCollisionLayer = CollisionLayers.Bullet;
+        float healAmmount;
+        public HealthPack(Vector2 position, float healAmmount = DEFAULT_HEAL_AMMOUNT) : base(position)
+        {
+            this.healAmmount = healAmmount;
         }
 
-        public void LoadContent(ContentManager cm)
+        protected override void OnCollected(Player p)
         {
-            if(defaultTexture == null)
-            {
-                defaultTexture = cm.Load<Texture2D>(DEFAULT_TEXTURE_PATH);
-            }
-
-            Texture = defaultTexture;
-            CenterOrigin();
-        }
-
-        public override void OnCollision(PhysicsObject other)
-        {
-            // Kan inte collidera med sig själv
-            if (shooter == other)
-                return;
-
-            if (other is IDamageable)
-            {
-                bool damageDealt = (other as IDamageable).Damage(dammageAmmount);
-                if (damageDealt) { 
-                    IsAlive = false;
-                    if(shooter is Player && other is Enemy && !other.IsAlive)
-                    {
-                        (shooter as Player).Score += (other as Enemy).PointsWhenKilled;
-                    }
-                }
-            }
-        }
-
-        
-
-        public override void Update(GameWindow gw, GameTime gt)
-        {
-            Vector2 worldSize = GameElements.World.Size;
-
-            // X-led
-            if (Position.X < -OFFSCREEN_DESTORY_DISTANCE || Position.X > worldSize.X + OFFSCREEN_DESTORY_DISTANCE)
-                IsAlive = false;
-
-            // Y-led
-            if (Position.Y < -OFFSCREEN_DESTORY_DISTANCE || Position.Y > worldSize.Y + OFFSCREEN_DESTORY_DISTANCE)
-                IsAlive = false;
-
-            base.Update(gw, gt);
+            p.Heal(healAmmount);
         }
     }
+
 
 
 
@@ -389,6 +265,16 @@ namespace PongOut
     //    public abstract bool Use(Player user);
     //}
 
+
+    public interface IHealable
+    {
+        /// <summary>
+        /// Heal a thing
+        /// </summary>
+        /// <param name="ammount">The ammount to heal</param>
+        /// <returns>The ammount that was healed</returns>
+        float Heal(float ammount);
+    }
 
     public interface IDamageable
     {
