@@ -3,13 +3,10 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace PongOut
 {
-
-    /**
-     * Att GÖRA:
-     * 1. poängsystem
-     */
-
-    public abstract class WorldObject : GameObject, IDrawable
+    /// <summary>
+    /// A WorldObject is an object that can be drawn and is also a gameobject
+    /// </summary>
+    public abstract class WorldObject : GameObject
     {
         protected Texture2D Texture { get; set; }
         public Vector2 Position { get; protected set; } = Vector2.Zero;
@@ -23,7 +20,7 @@ namespace PongOut
         protected Vector2 Origin { get; set; } = Vector2.Zero;
         protected Vector2 Scale { get; set; } = Vector2.One;
 
-        protected float LayerDepth = 0;
+        protected float LayerDepth = 0.5f;
 
 
         public WorldObject(Vector2 position, Texture2D texture = default)
@@ -32,6 +29,9 @@ namespace PongOut
             Position = position;
         }
 
+        /// <summary>
+        /// Centers the origin to the center of the current Texture
+        /// </summary>
         public void CenterOrigin()
         {
             this.Origin = Texture.Bounds.Size.ToVector2() / 2; 

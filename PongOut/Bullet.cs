@@ -7,7 +7,7 @@ namespace PongOut
 {
     public class Bullet : PhysicsObject, IContent
     {
-        static readonly string CONTENT_PATH= "bullet";
+        static readonly string CONTENT_PATH = "bullet";
         static readonly string DEFAULT_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defaultTexture");
 
         static Texture2D defaultTexture; 
@@ -41,9 +41,7 @@ namespace PongOut
         public void LoadContent(ContentManager cm)
         {
             if(defaultTexture == null)
-            {
                 defaultTexture = cm.Load<Texture2D>(DEFAULT_TEXTURE_PATH);
-            }
 
             Texture = defaultTexture;
             CenterOrigin();
@@ -51,7 +49,7 @@ namespace PongOut
 
         public override void OnCollision(PhysicsObject other)
         {
-            // Kan inte collidera med sig själv
+            // Cannot collide with the shooter
             if (shooter == other)
                 return;
 
@@ -60,6 +58,8 @@ namespace PongOut
                 bool damageDealt = (other as IDamageable).Damage(dammageAmmount);
                 if (damageDealt) { 
                     IsAlive = false;
+
+                    // Add points when a player kills an enemy 
                     if(shooter is Player && other is Enemy && !other.IsAlive)
                     {
                         (shooter as Player).Score += (other as Enemy).PointsWhenKilled;
@@ -74,11 +74,11 @@ namespace PongOut
         {
             Vector2 worldSize = GameElements.World.Size;
 
-            // X-led
+            // X
             if (Position.X < -OFFSCREEN_DESTORY_DISTANCE || Position.X > worldSize.X + OFFSCREEN_DESTORY_DISTANCE)
                 IsAlive = false;
 
-            // Y-led
+            // Y
             if (Position.Y < -OFFSCREEN_DESTORY_DISTANCE || Position.Y > worldSize.Y + OFFSCREEN_DESTORY_DISTANCE)
                 IsAlive = false;
 

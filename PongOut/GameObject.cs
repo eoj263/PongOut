@@ -4,25 +4,20 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace PongOut
 {
-    public abstract class GameObject : IUpdatable
+    /// <summary>
+    /// An object that can be added to the game. It is also updateable and Killable
+    /// </summary>
+    public abstract class GameObject 
     {
-        //public int UpdatePriority { get; set; } = 0;
-
         public bool IsAlive
         {
             get; protected set;
         } = true;
 
-        //protected World world;
-        //public GameObject(World w)
-        //{
-        //    world = w;
-        //}
-
-        //public int CompareTo([AllowNull] GameObject other)
-        //{
-        //    return UpdatePriority - other.UpdatePriority;
-        //}
+        public void Kill()
+        {
+            this.IsAlive = false;
+        }
 
         public abstract void Update(GameWindow gw, GameTime gt);
     }

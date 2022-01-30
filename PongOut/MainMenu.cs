@@ -14,7 +14,7 @@ namespace PongOut
         public static readonly string START_TEXTURE_PATH = Path.Combine(TEXTURES_PATH, "start");
         public static readonly string HIGHSCORE_TEXTURE_PATH = Path.Combine(TEXTURES_PATH, "highscore");
         public static readonly string EXIT_TEXTURE_PATH = Path.Combine(TEXTURES_PATH, "exit");
-
+        public static readonly string HOW_TO_PLAY_TEXTURE_PATH = Path.Combine(TEXTURES_PATH, "howToPlay");
 
         public MainMenu() : base(0)
         { }
@@ -24,17 +24,16 @@ namespace PongOut
             Texture2D startTexture = cm.Load<Texture2D>(START_TEXTURE_PATH);
             Texture2D exitTexture = cm.Load<Texture2D>(EXIT_TEXTURE_PATH);
             Texture2D highscoreTexture = cm.Load<Texture2D>(HIGHSCORE_TEXTURE_PATH);
+            Texture2D howToPlayTexture = cm.Load<Texture2D>(HOW_TO_PLAY_TEXTURE_PATH);
 
             AddItem(startTexture, GameElements.State.Run);
             AddItem(highscoreTexture, GameElements.State.Highscore);
             AddItem(exitTexture, GameElements.State.Quit);
+            AddItem(howToPlayTexture, GameElements.State.HowToPlay);
         }
 
         public override GameElements.State Update(GameTime gameTime)
         {
-            KeyboardState kbs = Keyboard.GetState();
-            if (kbs.IsKeyDown(Keys.Escape))
-                return GameElements.State.Quit;
             return base.Update(gameTime);
         }
     }

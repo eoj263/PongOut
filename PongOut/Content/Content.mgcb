@@ -25,6 +25,42 @@
 /processorParam:TextureFormat=Color
 /build:bullet/bullet.png;bullet/defaultTexture.png
 
+#begin collectable/coin.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:collectable/coin.png
+
+#begin collectable/HealthIncrease.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:collectable/HealthIncrease.png;collectable/maxHealthRaiser.png
+
+#begin collectable/HealthPack.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:collectable/HealthPack.png;collectable/healthPack.png
+
 #begin enemy/shootingZombie/zoimbie1_gun.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -79,6 +115,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:menues/mainMenu/textures/highscore.png
+
+#begin menues/mainMenu/textures/howtoplay.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:menues/mainMenu/textures/howtoplay.jpg;menues/mainMenu/textures/howToPlay.jpg
 
 #begin menues/mainMenu/textures/start.png
 /importer:TextureImporter

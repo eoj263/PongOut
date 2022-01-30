@@ -5,7 +5,7 @@ using System.IO;
 
 namespace PongOut
 {
-    public class ScreenText : UIComponent, IContent {
+    public class ScreenText : IContent {
         public const string FONT_CONTENT = "fonts";
         public const string DEFAULT_FONT_NAME = "default";
         public const int DEFAULT_FONT_SCALE = 1;
@@ -57,7 +57,7 @@ namespace PongOut
         }
 
 
-        public override void Draw(SpriteBatch sb)
+        public virtual void Draw(SpriteBatch sb)
         {
             sb.DrawString(font, Text, position, Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 1);
         }

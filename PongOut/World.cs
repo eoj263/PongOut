@@ -7,111 +7,6 @@ using System.Linq;
 
 namespace PongOut
 {
-
-
-    public class TemporarySpawner : Spawner
-    {
-        const float Compensation = 2;
-        int targetSpawnCount;
-
-        float timeLeftToLive => maxTimeAlive - timeAlive;
-        float maxTimeAlive;
-
-        /// <summary>
-        /// Creates a spawner that should spawn a certain ammount of things and be destroyed after a certain time
-        /// </summary>
-        /// <param name="spawn"></param>
-        /// <param name="genSpawnLocation"></param>
-        /// <param name="maxTimeAlive"></param>
-        /// <param name="targetSpawnCount"></param>
-        public TemporarySpawner(Action<Vector2> spawn, Func<Vector2> genSpawnLocation, float maxTimeAlive, int targetSpawnCount) : base(spawn, genSpawnLocation)
-        {
-            spawnCount = 0;
-            this.maxTimeAlive = maxTimeAlive;
-            this.targetSpawnCount= targetSpawnCount;
-        }
-
-        public float GenerateTimeToNextSpawn()
-        {
-            if(targetSpawnCount - spawnCount > 0) // Försök se till att rätt mängd saker spawnat innan tiden går ut
-                return (float)rand.NextDouble() * timeLeftToLive / (targetSpawnCount - spawnCount) * Compensation;
-
-            // Har vi spawnat fler enheter än vad som behövs
-            GameElements.WriteDebugLine("Using the other thing");
-            return (float)rand.NextDouble() * maxTimeAlive / targetSpawnCount * Compensation;
-
-        }
-    }
-
-    public class PersistentSpawner : Spawner
-    {
-        private float minSpawnTime, maxSpawnTime;
-
-        /// <summary>
-        /// Generates a spawner that will persist untill killed by external sources. 
-        /// </summary>
-        /// <param name="spawn"></param>
-        /// <param name="genSpawnLocation"></param>
-        /// <param name="minSpawnTime">The least ammount of time between spawns</param>
-        /// <param name="maxSpawnTime">The max ammount of time between spawns</param>
-        public PersistentSpawner(Action<Vector2> spawn, Func<Vector2> genSpawnLocation, float minSpawnTime, float maxSpawnTime) : base(spawn, genSpawnLocation)
-        {
-            if (minSpawnTime > maxSpawnTime)
-                throw new ArgumentException("Max spawn time cannot be greater than min spawntime");
-
-            this.minSpawnTime = minSpawnTime;
-            this.maxSpawnTime = maxSpawnTime;
-        }
-
-        protected override float GenerateTimeToNextSpawn()
-        {
-            return (float)rand.NextDouble() * (maxSpawnTime - minSpawnTime) + minSpawnTime;
-        }
-    }
-
-
-    public abstract class Spawner : GameObject
-    {
-        Action<Vector2> spawn;
-        Func<Vector2> genSpawnLocation;
-
-        protected float timeAlive = 0;
-        float timeToNextSpawn = 0;
-
-        protected int spawnCount;
-
-        protected Random rand = new Random();
-        
-        /// <summary>
-        /// Creates a spawner that should spawn a certain ammount of things and be destroyed after a certain time
-        /// </summary>
-        /// <param name="spawn"></param>
-        /// <param name="genSpawnLocation"></param>
-        /// <param name="maxTimeAlive"></param>
-        /// <param name="targetSpawnCount"></param>
-        public Spawner(Action<Vector2> spawn, Func<Vector2> genSpawnLocation)
-        {
-            this.spawn = spawn;
-            this.genSpawnLocation = genSpawnLocation;
-        }
-
-        public override void Update(GameWindow gw, GameTime gt)
-        {
-            timeAlive += gt.ElapsedGameTime.Milliseconds;
-            timeToNextSpawn -= gt.ElapsedGameTime.Milliseconds;
-            if (timeToNextSpawn <= 0)
-            {
-                spawn(genSpawnLocation());
-                spawnCount++;
-
-                GameElements.WriteDebugLine("spawnCount: " + spawnCount);
-                timeToNextSpawn = GenerateTimeToNextSpawn();
-            }
-        }
-
-        protected abstract float GenerateTimeToNextSpawn();
-    }
-
     public class World
     {
 
@@ -119,30 +14,69 @@ namespace PongOut
 
         public bool GameOver { get; private set; }
 
-        // Each gameObject will have an id.
+        /// <summary>
+        ///  GameObjects are stored by their id
+        /// </summary>
         private Dictionary<int, GameObject> gameObjects;
 
+
+        /// <summary>
+        /// Stores all ids of GameObjects that are also WorldObjects
+        /// </summary>
         private SortedVector<int> worldObjects;
+
+        /// <summary>
+        /// Stores all ids of GameObjects that are also PhysicsObjects 
+        /// </summary>
         private SortedVector<int> physicsObjects;
 
-        private List<UIComponent> UIComponents;
+        /// <summary>
+        /// Stores all ids of GameObjects that are also EnemySpawners. Note enemySpawners are not automatically added to this list by the AddObject function 
+        /// </summary>
+        private SortedVector<int> enemySpawners;
 
+        /// <summary>
+        /// So that we know which gameObjectId the next game object should have
+        /// </summary>
         private int currentGameObjectId = 0;
 
         private Player player;
+        private ScreenText infoText;
 
-        private ScreenText scoreText;
 
+        /// <summary>
+        /// Objects that should be removed next frame
+        /// </summary>
         private Queue<int> objectsToRemoveQueue = new Queue<int>();
+
+        /// <summary>
+        /// Objects that should be added next frame
+        /// </summary>
         private Queue<object> objectsToAddQueue = new Queue<object>();
 
+        /// <summary>
+        /// Size of the world
+        /// </summary>
         public Vector2 Size { get; private set; }
 
+        /// <summary>
+        /// The current score
+        /// </summary>
+        public int Score => player.Score;
 
-        public int CurrentScore => player.Score;
+        int level = 0;
 
+        /// <param name="offset">The minimum distance to the edge of the screen</param>
+        public Vector2 RandomOnScreenCoordinate(float offset)
+        {
+            return new Vector2(
+                RandomXOnScreenCoordinate(offset),
+                RandomYOnScreenCoordinate(offset));
+        }
 
-        public Vector2 RandomOffscreenCoordinate(float offset) {
+        /// <param name="offset">How far away from the screen the object should spawn</param>
+        public Vector2 RandomOffscreenCoordinate(float offset)
+        {
             int edge = rand.Next(4);
 
             Vector2 location = Vector2.Zero;
@@ -160,105 +94,209 @@ namespace PongOut
                 case 3: // Left 
                     location = new Vector2(-offset, RandomYOnScreenCoordinate());
                     break;
-
             }
 
             return location;
         }
 
-        public float RandomXOnScreenCoordinate()
+        /// <summary>
+        /// Generates an on screen x-cooordinate
+        /// </summary>
+        /// <param name="offset"> The minimum distance to the edge of the screen</param>
+        public float RandomXOnScreenCoordinate(float offset = 0)
         {
-            return (float)rand.NextDouble() * Size.X;
+            return (float)rand.NextDouble() * (Size.X - 2 * offset) + offset;
         }
-        public float RandomYOnScreenCoordinate()
+
+        /// <summary>
+        /// Generates an on screen y-cooordinate
+        /// </summary>
+        /// <param name="offset"> The minimum distance to the edge of the screen</param>
+        public float RandomYOnScreenCoordinate(float offset = 0)
         {
-            return (float)rand.NextDouble() * Size.Y;
+            return (float)rand.NextDouble() * (Size.Y - 2 * offset) + offset;
         }
 
 
         public void Draw(SpriteBatch sb)
         {
-            scoreText.Draw(sb);
+            DrawUI(sb);
 
-            for(int i = 0; i < worldObjects.Length; i++)
+            for (int i = 0; i < worldObjects.Length; i++)
             {
                 int id = worldObjects[i];
                 (gameObjects[id] as WorldObject).Draw(sb);
             }
         }
 
+
+        protected void DrawUI(SpriteBatch sb)
+        {
+            infoText.Draw(sb);
+        }
+
+        public void GenerateSpawnersForCurrentLevel() { 
+
+            TemporarySpawner zombieSpawner = new TemporarySpawner(
+                (pos) =>
+                {
+                    LoadAndAddObject(new Zombie(pos, player));
+                },
+                () => RandomOffscreenCoordinate(20),
+                (10 + level * 2) * 1000, // How long this spawner should last 
+                (int)(2 + level * 1.2) // How many zombies should spawn for this level
+                );
+
+            TemporarySpawner shootingZombieSpawner = new TemporarySpawner(
+                (pos) =>
+                {
+                    LoadAndAddObject(new ShootingZombie(pos, player));
+                },
+                () => RandomOffscreenCoordinate(20),
+                (12 + level * 3) * 1000,
+                (int)(level * 1.5)
+                );
+
+            int zombieSpawnerId = LoadAndAddObject(zombieSpawner);
+            int shootingZombieSpawnerId = LoadAndAddObject(shootingZombieSpawner);
+
+            // Since AddObject does not manage the enemySpawnerList
+            enemySpawners.Add(zombieSpawnerId); 
+            enemySpawners.Add(shootingZombieSpawnerId);
+        }
+
+
         public void LoadInitialState(GameWindow window)
         {
             gameObjects = new Dictionary<int, GameObject>();
-
             worldObjects = new SortedVector<int>(false);
             physicsObjects = new SortedVector<int>(false);
-
-            UIComponents = new List<UIComponent>();
+            enemySpawners = new SortedVector<int>(false);
 
             Size = window.ClientBounds.Size.ToVector2();
 
             player = new Player(new Vector2(500, 200));
             LoadAndAddObject(player);
 
-            scoreText = new ScreenText(new Vector2(20, 20));
-            LoadObject(scoreText);
+            infoText = new ScreenText(new Vector2(20, 20));
+            LoadObject(infoText);
 
-            ShootingZombie zombie2 = new ShootingZombie(new Vector2(100, 100), player);
-            LoadAndAddObject(zombie2);
 
-            Zombie zombie1 = new Zombie(new Vector2(300, 300), player);
-            LoadAndAddObject(zombie1);
+            GenerateSpawnersForCurrentLevel(); 
 
-            Spawner<Zombie> zombieSpawner = new Spawner<Zombie>((pos) =>
-                LoadAndAddObject(new Zombie(pos, player)), () => RandomOffscreenCoordinate(50), 30000, 30);
-            LoadAndAddObject(zombieSpawner);
+            PersistentSpawner healthPackSpawner = new PersistentSpawner(
+                (pos) => LoadAndAddObject(new HealthPack(pos)),
+                () => RandomOnScreenCoordinate(20),
+                5000, 10000);
+
+            PersistentSpawner healthRaiserSpawner = new PersistentSpawner(
+                (pos) => LoadAndAddObject(new MaxHealthRaiser(pos)),
+                () => RandomOnScreenCoordinate(20),
+                5000, 20000);
+
+            PersistentSpawner coinSpawner = new PersistentSpawner(
+                (pos) => LoadAndAddObject(new Coin(pos)),
+                () => RandomOnScreenCoordinate(20),
+                0, 15000);
+
+            LoadAndAddObject(healthPackSpawner);
+            LoadAndAddObject(healthRaiserSpawner);
+            LoadAndAddObject(coinSpawner);
         }
 
-        public void LoadAndAddObject(object obj)
+        /// <param name="obj"></param>
+        public int LoadAndAddObject(object obj)
         {
             LoadObject(obj);
-            AddObject(obj);
+            return AddObject(obj);
         }
 
-        public void RemoveObject(int id)
+        /// <summary>
+        /// Removes an object from all lists where it is stored and calls tries to call the objects "OnRemove" function
+        /// </summary>
+        /// <param name="id"></param>
+        private void RemoveObject(int id)
         {
+            GameObject obj;
+            if(gameObjects.TryGetValue(id, out obj))
+            {
+                if (obj is IOnRemove)
+                    (obj as IOnRemove).OnRemove();
+            }
+
             gameObjects.Remove(id);
             worldObjects.Remove(id);
             physicsObjects.Remove(id);
+            enemySpawners.Remove(id);
         }
 
-        void AddObject(object toAdd)
+        /// <summary>
+        /// Adds the object to the GameObjectList where the object gets an ID. Furthermore this function adds the object to relevant "convenience" lists
+        /// </summary>
+        /// <param name="toAdd"></param>
+        /// <returns></returns>
+        int AddObject(object toAdd)
         {
-            if (inGameObjectItteration) {
+            if (inGameObjectItteration)
+            {
                 QueueAddObject(toAdd);
-                return;
+                return currentGameObjectId++;
             }
 
             if (toAdd is GameObject)
                 gameObjects.Add(currentGameObjectId++, toAdd as GameObject);
             if (toAdd is WorldObject) worldObjects.Add(currentGameObjectId - 1);
             if (toAdd is PhysicsObject) physicsObjects.Add(currentGameObjectId - 1);
+            return currentGameObjectId - 1;
         }
 
+        /// <summary>
+        /// If the object implements IContent the object will get a chans to load it's assets
+        /// </summary>
+        /// <param name="toLoad"></param>
         public void LoadObject(object toLoad)
         {
             if (toLoad is IContent) GameElements.LoadContentsOf(toLoad as IContent);
         }
 
+        /// <summary>
+        /// True when world is updating and removing GameObjects
+        /// </summary>
         bool inGameObjectItteration = false;
+
+        /// <summary>
+        /// All logic of levels
+        /// </summary>
+        public void HandleLevels()
+        {
+            if (enemySpawners.Length > 0)
+                return;
+
+            level++; 
+            int pointsToGrant = level * 10;
+            GameElements.FlashMessage(
+                new FlashedMessage($"Grattis du har nu nått nivå {level}. Du belönas därför med {pointsToGrant} poäng")
+                );
+            player.Score += pointsToGrant;
+
+            GenerateSpawnersForCurrentLevel();
+        }
 
 
         public void Update(GameWindow window, GameTime gameTime)
         {
+
             ProcessGameObjectQueues();
+            HandleLevels();
 
             inGameObjectItteration = true;
-            foreach(KeyValuePair<int, GameObject> kv in gameObjects)
+            foreach (KeyValuePair<int, GameObject> kv in gameObjects)
             {
-                if (!kv.Value.IsAlive && !(kv.Value is Player))
+                if (!kv.Value.IsAlive)
                 {
-                    RemoveObject(kv.Key);
+                    // Remove object if it is not a player
+                    if (!(kv.Value is Player))
+                        RemoveObject(kv.Key);
                     continue;
                 }
 
@@ -268,38 +306,45 @@ namespace PongOut
 
             DoCollisions();
 
-            scoreText.Text = $"Poäng: {player.Score}";
+            infoText.Text = $"Liv: {player.Health}/{player.maxHealth}\nPoäng: {player.Score}\nNivå: {level}";
 
             if (!player.IsAlive)
                 GameOver = true;
         }
 
-        void QueueRemoveObject(int id) {
-            objectsToRemoveQueue.Enqueue(id);
-        }
-        void QueueAddObject(object obj) {
+        /// <summary>
+        /// Add an object next frame
+        /// </summary>
+        /// <param name="obj"></param>
+        void QueueAddObject(object obj)
+        {
             objectsToAddQueue.Enqueue(obj);
         }
 
+        /// <summary>
+        /// Removes and adds objects that are queued for removal/adding
+        /// </summary>
         void ProcessGameObjectQueues()
         {
-            while(objectsToRemoveQueue.Count > 0)
+            while (objectsToRemoveQueue.Count > 0)
             {
                 RemoveObject(objectsToRemoveQueue.Dequeue());
             }
 
-            while(objectsToAddQueue.Count > 0)
+            while (objectsToAddQueue.Count > 0)
             {
                 AddObject(objectsToAddQueue.Dequeue());
             }
         }
 
 
-        public void DoCollisions() { 
+        public void DoCollisions()
+        {
 
-            for(int i = 0; i < physicsObjects.Length; i++)
+            // Find all collisions
+            for (int i = 0; i < physicsObjects.Length; i++)
             {
-                for(int j = i + 1; j < physicsObjects.Length; j++)
+                for (int j = i + 1; j < physicsObjects.Length; j++)
                 {
                     PhysicsObject a = (PhysicsObject)gameObjects[physicsObjects[i]];
                     PhysicsObject b = (PhysicsObject)gameObjects[physicsObjects[j]];
@@ -313,115 +358,12 @@ namespace PongOut
                 }
             }
 
-            for(int i = 0; i < physicsObjects.Length; i++)
+            // Make all objects manage the collisions
+            for (int i = 0; i < physicsObjects.Length; i++)
             {
                 int id = physicsObjects[i];
                 ((PhysicsObject)gameObjects[id]).DispatchCollisions();
             }
         }
     }
-
-    public class SortedVector<T> where T: IComparable<T> 
-    {
-        List<T> list;
-        bool allowDuplicates;
-
-        public SortedVector(bool allowDuplicates = true){
-            this.allowDuplicates = allowDuplicates;
-            list = new List<T>();
-        }
-        public int Length => list.Count; 
-        
-        public T this[int index] {
-            get
-            {
-                return list[index];
-            }
-        }
-
-        public void Add(T obj)
-        {
-            int index = Find(obj);
-            if (index >= 0 && !allowDuplicates)
-                throw new ArgumentException("Duplicate item");
-            int insertAt = index;
-            if(insertAt < 0)
-                insertAt = ~index;
-
-            list.Insert(insertAt, obj);
-        }
-
-        public int Find(T obj)
-        {
-            return list.BinarySearch(obj);
-        }
-
-        public bool Remove(T obj)
-        {
-            int idx = Find(obj);
-            if (idx < 0)
-                return false;
-
-            list.RemoveAt(idx);
-            return true;
-        }
-
-        //private class SortedVectorEnumerator : IEnumerator<T>
-        //{
-
-        //    private int currentIdx = -1;
-
-        //    public T Current => vector[currentIdx];
-        //    object IEnumerator.Current => vector[currentIdx];
-
-        //    public void Dispose()
-
-        //    {
-        //    }
-
-        //    public bool MoveNext()
-        //    {
-        //        currentIdx++;
-        //        return (currentIdx < vector.Length); 
-        //    }
-
-        //    public void Reset()
-        //    {
-        //        currentIdx = -1;
-        //    }
-
-        //    SortedVector<T> vector;
-        //    public SortedVectorEnumerator(SortedVector<T> vector) {
-        //        this.vector = vector;
-        //    }
-        //}
-    }
-
-
-    public class DebugText : ScreenText
-    {
-
-        Queue<string> buffer;
-        private int bufferSize;
-
-
-        public DebugText(Vector2 position, int bufferSize) : base(position)
-        {
-            this.bufferSize = bufferSize;
-            buffer = new Queue<string>(bufferSize);
-        }
-
-        public void Log(string message)
-        {
-            buffer.Enqueue(message);
-            while (buffer.Count > bufferSize)
-                buffer.Dequeue();
-        }
-
-        public override void Draw(SpriteBatch sb)
-        {
-            Text = string.Join('\n', buffer);
-            base.Draw(sb);
-        }
-   }
 }

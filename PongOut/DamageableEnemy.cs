@@ -2,6 +2,7 @@
 
 namespace PongOut
 {
+
     public abstract class DamageableEnemy : Enemy, IDamageable
     {
         public float Health { get; private set; }

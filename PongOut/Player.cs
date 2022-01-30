@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace PongOut
 {
-    public class Player : PhysicsObject, IDamageable, IContent, IHealable
+    public class Player : PhysicsObject, IDamageable, IContent, IHealable 
     {
         static readonly string CONTENT_PATH = "player";
         static readonly string STAND_TEXTURE_PATH = Path.Join(CONTENT_PATH, "defualt/stand");
@@ -27,6 +27,9 @@ namespace PongOut
         Gun gun;
         public float Health { get; private set; }
 
+        float timeAnimatingDamage = 0;
+        bool playingDamageAnimation = false;
+
         public Player(Vector2 position, float maxHealth = DEFAULT_MAX_HEALTH) : base(position, null)
         {
             this.maxHealth = maxHealth;
@@ -34,10 +37,22 @@ namespace PongOut
 
             gun = new Gun(this, 250, 30, 7);
             GameElements.World.LoadAndAddObject(gun);
-            ActiveCollisionLayer |= CollisionLayers.Bullet | CollisionLayers.Collectable | CollisionLayers.PlayerEnemy | CollisionLayers.PlayerCollectable;
+            ActiveCollisionLayer |= CollisionLayers.Bullet | CollisionLayers.PlayerEnemy | CollisionLayers.PlayerCollectable;
         }
 
         public override void OnCollision(PhysicsObject obj) {}
+
+        protected void StartDamageAnimation() { 
+            playingDamageAnimation = true;
+            Color = Color.Red;
+            timeAnimatingDamage = 0;
+        }
+
+        protected void StopDamageAnimation()
+        {
+            playingDamageAnimation = false;
+            Color = Color.White;
+        }
 
         public void LoadContent(ContentManager cm)
         {
@@ -68,8 +83,20 @@ namespace PongOut
 
             Velocity = wantedRelativeMovementDirection * speed;
             RestrictToScreenBounds();
+            HandleDamageAnimation(gt);
 
             base.Update(gw, gt);
+        }
+
+        private void HandleDamageAnimation(GameTime gt)
+        {
+            if (playingDamageAnimation)
+            {
+                timeAnimatingDamage += gt.ElapsedGameTime.Milliseconds;
+
+                if(timeAnimatingDamage > 0.1f)
+                    StopDamageAnimation();
+            }
         }
 
         private void UpdateTexture()
@@ -132,6 +159,7 @@ namespace PongOut
                 wanted.Normalize();
             }
 
+            // Check if we should ender gun mode
             if (kbs.IsKeyDown(moveUpKey) && kbs.IsKeyDown(moveLeftKey) && kbs.IsKeyDown(moveRightKey))
             {
                 wanted = Vector2.Zero;
@@ -144,6 +172,11 @@ namespace PongOut
         public bool Damage(float ammount)
         {
             Health -= ammount;
+            StartDamageAnimation();
+
+            if (Health <= 0)
+                IsAlive = false;
+
             return true;
         }
 
@@ -157,275 +190,6 @@ namespace PongOut
         public void IncreaseMaxHealth(float ammount)
         {
             maxHealth += ammount;
-        }
-    }
-
-    public interface ICollector
-    {
-        /// <summary>
-        /// Collect an item
-        /// </summary>
-        /// <param name="c">The item to collect</param>
-        /// <returns>It the item was able to be collected</returns>
-        bool Collect(Collectable c);
-    }
-
-
-    public class Coin : PlayerCollectable
-    {
-        const int DEFAULT_SCORE_TO_GIVE = 4; 
-        int scoreToGive;
-        public Coin(Vector2 position, int scoreAdd = DEFAULT_SCORE_TO_GIVE) : base(position) {
-            this.scoreToGive = scoreAdd;
-        }
-
-        protected override void OnCollected(Player p)
-        {
-            p.Score += scoreToGive;
-        }
-    }
-
-    public abstract class PlayerCollectable : Collectable
-    {
-        protected PlayerCollectable(Vector2 position) : base(position)
-        {
-            ActiveCollisionLayer = CollisionLayers.PlayerCollectable;
-        }
-
-        protected override sealed void OnCollected(ICollector collector)
-        {
-            OnCollected(collector as Player);
-        }
-
-        protected abstract void OnCollected(Player p);
-    }
-
-    public class MaxHealthRaiser : PlayerCollectable
-    {
-        const float DEFAULT_AMMOUNT = 5;
-
-        float ammount;
-        public MaxHealthRaiser(Vector2 position, float ammount = DEFAULT_AMMOUNT) : base(position)
-        {
-            this.ammount = ammount;
-        }
-
-        protected override void OnCollected(Player p)
-        {
-            p.IncreaseMaxHealth(ammount);
-        }
-    }
-
-
-    public class HealthPack : PlayerCollectable
-    {
-
-        const float DEFAULT_HEAL_AMMOUNT = 10;
-
-        float healAmmount;
-        public HealthPack(Vector2 position, float healAmmount = DEFAULT_HEAL_AMMOUNT) : base(position)
-        {
-            this.healAmmount = healAmmount;
-        }
-
-        protected override void OnCollected(Player p)
-        {
-            p.Heal(healAmmount);
-        }
-    }
-
-
-
-
-    //public class Gun 
-    //{
-    //    public void Attatch(Player p);
-
-    //    public bool Use(Player user)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-    //}
-
-
-    //public interface IWeapon 
-    //{
-
-    //    public Enum Kind
-    //    {
-    //        gun;
-    //    }
-
-    //    /// <summary>
-    //    /// Uses a weapon
-    //    /// </summary>
-    //    /// <param name="positoin"></param>
-    //    /// <param name="facing"></param>
-    //    /// <returns>If the weapon was able to be used or not</returns>
-    //    public abstract bool Use(Player user);
-    //}
-
-
-    public interface IHealable
-    {
-        /// <summary>
-        /// Heal a thing
-        /// </summary>
-        /// <param name="ammount">The ammount to heal</param>
-        /// <returns>The ammount that was healed</returns>
-        float Heal(float ammount);
-    }
-
-    public interface IDamageable
-    {
-        /// <summary>
-        /// Damage the object
-        /// </summary>
-        /// <param name="ammount"></param>
-        /// <returns>True if the damage was given, false if not</returns>
-        bool Damage(float ammount);
-    }
-
-    public class Gun : GameObject
-    {
-
-        static float DEFAULT_COOLDOWN = 6000;
-
-        private float timeSinceUse;
-        private float cooldown;
-
-        private PhysicsObject user;
-
-        float? bulletDamage;
-        float? bulletSpeed; 
-
-        public Gun(PhysicsObject user, float? cooldown = null, float? bulletDamage = null, float? bulletSpeed = null)
-        {
-            this.user = user;
-
-            if (!cooldown.HasValue)
-                cooldown = DEFAULT_COOLDOWN;
-
-            this.cooldown = cooldown.Value;
-            timeSinceUse = this.cooldown;
-
-            this.bulletDamage = bulletDamage;
-            this.bulletSpeed = bulletSpeed;
-        }
-
-        public override void Update(GameWindow gw, GameTime gt)
-        {
-            timeSinceUse += gt.ElapsedGameTime.Milliseconds;
-        }
-
-        public bool Use(Vector2 facing) {
-            if (!AbleToFire())
-                return false;
-
-            Fire(facing);
-            timeSinceUse = 0;
-            return true;
-        }
-
-        public bool AbleToFire() {
-            if(timeSinceUse >= cooldown)
-                return true;
-
-            return false;
-        }
-
-        void Fire(Vector2 facing)
-        {
-            Bullet b = new Bullet(user, user.Position, facing, bulletDamage, bulletSpeed);
-            GameElements.World.LoadAndAddObject(b);
-        }
-    }
-
-
-    public class ShootingZombie : Zombie
-    {
-
-        public static new readonly string CONTENT_PATH = Path.Combine(Enemy.CONTENT_PATH, "shootingZombie");
-        public static readonly string TEXTURE_PATH = Path.Combine(CONTENT_PATH, "defaultTexture");
-
-        public static Texture2D defaultTexture;
-
-
-        Gun gun;
-        public ShootingZombie(Vector2 position, WorldObject target) : base(position, target)
-        {
-            PointsWhenKilled = 2;
-            gun = new Gun(this);
-            // TODO make so that the gun is removed when the zombie dies
-            GameElements.World.LoadAndAddObject(gun);
-        }
-
-        public override void LoadContent(ContentManager cm)
-        {
-            if(defaultTexture == null)
-            {
-                defaultTexture = cm.Load<Texture2D>(TEXTURE_PATH);
-            }
-
-            Texture = defaultTexture;
-            CenterOrigin();
-        }
-
-        public override void Update(GameWindow gw, GameTime gt)
-        {
-            gun.Use(facing);
-            base.Update(gw, gt);
-        }
-    }
-
-
-    public class Zombie : DamageableEnemy 
-    {
-        public static new readonly string CONTENT_PATH = Path.Combine(Enemy.CONTENT_PATH, "zombie");
-        public static readonly string WALK_TEXTURE_PATH = Path.Combine(CONTENT_PATH, "walk");
-
-        static readonly float DEFAULT_HEALTH = 100;
-        static readonly float DEFAULT_SPEED = 1;
-        
-        static Texture2D walk;
-
-
-        protected Vector2 facing;
-        private WorldObject target;
-
-        public Zombie(Vector2 position, WorldObject target): base(position, DEFAULT_HEALTH)
-        {
-            this.target = target;
-        }
-
-        public override void Update(GameWindow gw, GameTime gt)
-        {
-            facing = Vector2.Normalize(target.Position - Position);
-            Rotation = MathF.Atan2(facing.Y, facing.X);
-
-            Velocity = facing * DEFAULT_SPEED;
-
-
-            base.Update(gw, gt);
-        }
-
-        public override void LoadContent(ContentManager cm)
-        {
-            if(walk == null)
-            {
-                walk = cm.Load<Texture2D>(WALK_TEXTURE_PATH);
-            }
-
-            Texture = walk;
-            CenterOrigin();
-        }
-
-        public override void OnCollision(PhysicsObject other)
-        {
-            if(other is Player)
-            {
-                (other as Player).Damage(20);
-            }
         }
     }
 }

@@ -1,0 +1,267 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="PongOut.Bullet" Collapsed="true">
+    <Position X="1.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAQAAAAABAgAAQAAIAQAAAAAAAAAAAAAIAAAAAAIQAQ=</HashCode>
+      <FileName>Bullet.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.Coin" Collapsed="true">
+    <Position X="5.75" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAQAAABAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAgAAQ=</HashCode>
+      <FileName>Coin.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.Collectable" Collapsed="true">
+    <Position X="5.75" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAA=</HashCode>
+      <FileName>Collectable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.DamageableEnemy" Collapsed="true">
+    <Position X="10.25" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQACACBAAAEAAAAAAABAAAAAAAAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DamageableEnemy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.Enemy" Collapsed="true">
+    <Position X="10.25" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAgAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Enemy.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.FIFOScreenText" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAIAgAAAAAAAAAAAAgAAAAAAABAAAAAAAA=</HashCode>
+      <FileName>FIFOScreenText.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.FlashedMessage" Collapsed="true">
+    <Position X="21.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAECAAAAEAAAAAAAAAAAAAAAAgAAACBAAgAA=</HashCode>
+      <FileName>FlashedMessage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.Game1" Collapsed="true">
+    <Position X="23.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAEAAAAAAAAwAAAAAAAAAAAAAAAAACAIAAAAAAAAQ=</HashCode>
+      <FileName>Game1.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.GameElements" Collapsed="true">
+    <Position X="25.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAilAQUIBCAAQAgAKAAQCCApAAAECAkCAAAAIAQ0CQ=</HashCode>
+      <FileName>GameElements.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.GameObject" Collapsed="true">
+    <Position X="10.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AQQAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>GameObject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.Gun" Collapsed="true">
+    <Position X="14.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAQAAAAAAABAAABACAAAAAAACCAEAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>Gun.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.HealthPack" Collapsed="true">
+    <Position X="8" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAACAAAABAAAAAAAAAAAAAAAAAAAAIAQAAAAAAAAAAQ=</HashCode>
+      <FileName>HealthPack.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.HighScore" Collapsed="true">
+    <Position X="21.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAUwEABESAAAhAIIAAAAAAAEQAARAAAQAAAAFAA=</HashCode>
+      <FileName>HighScore.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.HighScoreItem" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="23.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAwEAAAAAAQAAABAAQAAAAAAAAAAAAA=</HashCode>
+      <FileName>HighScore.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="PongOut.MainMenu" Collapsed="true">
+    <Position X="3.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAQAAAAQAAgAAAAAAAQAAAAAABAAAAAAAgAAAAAAAAQ=</HashCode>
+      <FileName>MainMenu.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.MaxHealthRaiser" Collapsed="true">
+    <Position X="3.5" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAABAAAAAACAAAAAAAAAQAAAIAAAAAAAAAAAAQ=</HashCode>
+      <FileName>MaxHealthRaiser.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.Menu&lt;T&gt;" Collapsed="true">
+    <Position X="3.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgQAAAAAAAgAAgAAAAAAAAgAgAAAAAAAQABAAgAAAAA=</HashCode>
+      <FileName>Menu.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.MenuItem&lt;T&gt;" Collapsed="true">
+    <Position X="25.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgIAAAIAAAAAAAAgAAAAIABAAAAAA=</HashCode>
+      <FileName>MenuItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.MovingObject" Collapsed="true">
+    <Position X="7" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>MovingObject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.PersistentSpawner" Collapsed="true">
+    <Position X="17" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAAEAAEAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PersistentSpawner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.PhysicsObject" Collapsed="true">
+    <Position X="7" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAEEEAAAAAAAAAACACAACAIAAAgAAAAAA=</HashCode>
+      <FileName>PhysicsObject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.Player" Collapsed="true">
+    <Position X="12.5" Y="6.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>GAQCCADJAAgEEEiIggABAAABAEAAYYAAIAAAAIEAQCw=</HashCode>
+      <FileName>Player.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.PlayerCollectable" Collapsed="true">
+    <Position X="5.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PlayerCollectable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.Program" Collapsed="true">
+    <Position X="21.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>Program.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.ScreenText" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAgQAAAIAIACAAABAEAAggAAQiAAAAAQ=</HashCode>
+      <FileName>ScreenText.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.ShootingZombie" Collapsed="true">
+    <Position X="10.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAABABAgAAAAAAAEAAAAAAAAAAIAAAAAAAAAAAAQ=</HashCode>
+      <FileName>ShootingZombie.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="PongOut.SortedVector&lt;T&gt;" Collapsed="true">
+    <Position X="23.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAgAIAAAAAAAACAAABABAAAAIAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>SortedVector.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.Spawner" Collapsed="true">
+    <Position X="18.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAIAAAAAAAAAAAACUAAABAAAAAAAAAAAAABEAAAA=</HashCode>
+      <FileName>Spawner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.TemporarySpawner" Collapsed="true">
+    <Position X="19.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQEAACAAAAAAAAAAAAEAAAAAAAAAAAAMAAAAAAAAAA=</HashCode>
+      <FileName>TemporarySpawner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.World" Collapsed="true">
+    <Position X="25.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQCgKAIgAAQhggCASQIAAAABgkAQAoRAAgCAgDABAA=</HashCode>
+      <FileName>World.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.WorldObject" Collapsed="true">
+    <Position X="7" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAABAoAgAAIAAAAAAIAAAAEAAAIAgAgAAAA=</HashCode>
+      <FileName>WorldObject.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PongOut.Zombie" Collapsed="true">
+    <Position X="10.25" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAABAAAAgAAAAAIAAAAAAQAAAAIAAAICAAAABIAgw=</HashCode>
+      <FileName>Zombie.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="PongOut.IContent" Collapsed="true">
+    <Position X="21.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>IContent.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PongOut.IDamageable" Collapsed="true">
+    <Position X="23.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>IDamageable.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PongOut.IHealable" Collapsed="true">
+    <Position X="21.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>IHealable.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="PongOut.IOnRemove" Collapsed="true">
+    <Position X="23.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>IOnRemove.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

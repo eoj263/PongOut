@@ -11,11 +11,8 @@ namespace PongOut
         [Flags]
         public enum CollisionLayers
         {
-            Default,
-            World,
             PlayerEnemy,
             PlayerCollectable,
-            Collectable,
             Bullet,
         }
 
@@ -40,7 +37,7 @@ namespace PongOut
         protected void RestrictToScreenBounds() { 
             if(Position.X < 0 && Velocity.X < 0)
             {
-                Velocity = new Vector2(0, Position.Y);
+                Velocity = new Vector2(0, Velocity.Y);
             }
             else if(Position.X > GameElements.World.Size.X && Velocity.X > 0)
             {
@@ -49,7 +46,6 @@ namespace PongOut
 
             if(Position.Y < 0 && Velocity.Y < 0)
             {
-
                 Velocity = new Vector2(Velocity.X, 0);
             }
             else if(Position.Y > GameElements.World.Size.Y && Velocity.Y > 0)
@@ -89,6 +85,7 @@ namespace PongOut
         }
 
         Queue<PhysicsObject> collidingWith;
+
         /// <summary>
         /// Registers (queues) a collision event. The collision is then processed when DisbatchCollisions is called
         /// </summary>

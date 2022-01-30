@@ -8,14 +8,16 @@ namespace PongOut
     ///<summary> 
     /// Since different menues have different choices, the abstract Menu class is generic. This also allows for different menu choices to include data using classes.
     ///</summary>
-    public abstract class Menu<T> : IDrawable
+    public abstract class Menu<T> 
     {
-
         public readonly static string CONTENT_PATH = "menues";
 
         List<MenuItem<T>> menu;
         int selected = 0;
 
+        /// <summary>
+        /// Where to add the next element
+        /// </summary>
         float currentHeight = 0;
 
         double lastChange = 0;
