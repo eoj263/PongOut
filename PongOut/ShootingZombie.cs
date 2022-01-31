@@ -40,8 +40,8 @@ namespace PongOut
 
         public override void Update(GameWindow gw, GameTime gt)
         {
-            gun.Use(facing);
             base.Update(gw, gt);
+            gun.Use(facing);
         }
     }
 }
