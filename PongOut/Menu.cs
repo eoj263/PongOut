@@ -6,9 +6,9 @@ using System.Collections.Generic;
 namespace PongOut
 {
     ///<summary> 
-    /// Since different menues have different choices, the abstract Menu class is generic. This also allows for different menu choices to include data using classes.
+    /// Since different menues have different choices, the Menu class is generic. This also allows for different menu choices to include data using classes.
     ///</summary>
-    public abstract class Menu<T> 
+    public class Menu<T> 
     {
         public readonly static string CONTENT_PATH = "menues";
 
@@ -25,13 +25,13 @@ namespace PongOut
 
         float timeoutDelay = 130;
 
-        protected Menu(T defaultMenuState)
+        public Menu(T defaultMenuState)
         {
             menu = new List<MenuItem<T>>();
             this.defaultMenuState = defaultMenuState;
         }
 
-        protected void AddItem(Texture2D itemTexture, T state)
+        public void AddItem(Texture2D itemTexture, T state)
         {
             float X = 100;
             float Y = 100 + currentHeight;
