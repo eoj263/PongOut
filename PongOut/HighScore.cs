@@ -34,7 +34,6 @@ namespace PongOut
             GameElements.LoadContentsOf(infoText);
 
             infoText.Text = "För å, ä och ö tryck på knapparna 1, 2 och 3\nTryck på ENTER när du är klar";
-            UpdatePreview();
         }
 
         void AddScore(string name, int score)
@@ -57,6 +56,17 @@ namespace PongOut
             }
         }
 
+        public void InitializeEnterName()
+        {
+            UpdatePreview();
+
+            // We find the current rank and add 1 since "normal people" don't start counting from 0
+            int placement = PlacementOfScore(GameElements.World.Score) + 1;
+
+            // Find which letter should follow the ranking(1:a, 2:a, 3:e, 4:e)
+            char suffix = placement < 3 ? 'a' : 'e';
+            pointsText.Text = $"Du fick {GameElements.World.Score} poäng. (Du kom alltså på {placement}:{suffix} plats av {scores.Length})";
+        }
 
         Keys lastKeyPressed;
         float timeSincePress = 0;
@@ -102,6 +112,19 @@ namespace PongOut
             return false;
         }
 
+
+        // What rank a score would get you. E.g If you got the best highscore this method will return 0
+        int PlacementOfScore(int score)
+        {
+            for(int i = 0; i < scores.Length; i++)
+            {
+                if (scores[i].Score < score)
+                    return i;
+            }
+
+            return scores.Length - 1;
+        }
+
         /// <summary>
         /// Uppdaterar char count texten och namn previewn
         /// </summary>
@@ -109,9 +132,8 @@ namespace PongOut
             charCountText.Text = $"{name.Length}/{MAX_CHARS_IN_NAME}";
             charCountText.Color = MAX_CHARS_IN_NAME == name.Length ? Color.Red : Color.White;
             namePrevewText.Text = $"Ditt namn: {name}";
-            pointsText.Text = $"Du fick {GameElements.World.Score} poäng";
-        }
 
+        }
 
         public bool TryRegisterKey(string keyName)
         {

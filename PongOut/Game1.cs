@@ -47,6 +47,8 @@ namespace PongOut
                     break;
 
                 case GameElements.State.EnterHighScoreName:
+                    if (GameElements.StateChanged)
+                        GameElements.highScore.InitializeEnterName();
                     nextState = GameElements.HighScoreEnterNameUpdate(gameTime);
                     break;
 
