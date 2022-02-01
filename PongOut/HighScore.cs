@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 
@@ -58,19 +57,21 @@ namespace PongOut
 
         public void InitializeEnterName()
         {
-            UpdatePreview();
+            name = "";
 
             // We find the current rank and add 1 since "normal people" don't start counting from 0
             int placement = PlacementOfScore(GameElements.World.Score) + 1;
 
             // Find which letter should follow the ranking(1:a, 2:a, 3:e, 4:e)
             char suffix = placement < 3 ? 'a' : 'e';
-            pointsText.Text = $"Du fick {GameElements.World.Score} poäng. (Du kom alltså på {placement}:{suffix} plats av {scores.Length})";
+            pointsText.Text = $"Du fick {GameElements.World.Score} poäng. (Du kom alltså på {placement}:{suffix} plats av {scores.Length} andra spelare)";
+
+            UpdatePreview();
         }
 
         Keys lastKeyPressed;
         float timeSincePress = 0;
-        string name = "";
+        string name;
 
         readonly string allowedKeys = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ ";
 
@@ -92,12 +93,11 @@ namespace PongOut
             }
 
             Keys keyPressed = kbs.GetPressedKeys()[0];
-            string keyName = keyPressed.ToString();
 
             if (keyPressed == lastKeyPressed && timeSincePress < 150)
                 return false;
 
-            bool wasValidKey = TryRegisterKey(keyName);
+            bool wasValidKey = CheckKey(keyPressed);
             if (wasValidKey)
             {
                 lastKeyPressed = keyPressed;
@@ -122,7 +122,7 @@ namespace PongOut
                     return i;
             }
 
-            return scores.Length - 1;
+            return scores.Length;
         }
 
         /// <summary>
@@ -135,8 +135,15 @@ namespace PongOut
 
         }
 
-        public bool TryRegisterKey(string keyName)
+        /// <summary>
+        /// Checks if the passed key should be added to name. If so it adds the char of the key to the name
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool CheckKey(Keys key)
         {
+            string keyName = key.ToString();
+
             switch (keyName) {
                 case "Back":
                     if(name.Length > 0)
@@ -165,8 +172,8 @@ namespace PongOut
                 return false;
             }
 
-            char key = keyName[0];
-            if (!allowedKeys.Contains(key))
+            char keyChar = keyName[0];
+            if (!allowedKeys.Contains(keyChar))
                 return false;
 
             name += key;
@@ -219,51 +226,5 @@ namespace PongOut
 
             highScoreListText.Draw(sb);
         }
-    }
-
-    /// <summary>
-    /// An item representing a score.
-    /// </summary>
-    public class HighScoreItem : IComparable<HighScoreItem>
-    {
-        public string Name { get; private set; }
-        public int Score { get; private set; }
-
-        public HighScoreItem(string name, int score)
-        {
-            Name = name;
-            Score = score;
-        }
-
-        public static HighScoreItem FromSaveString(string hsiString)
-        {
-            string[] vals = hsiString.Trim().Split('\t');
-
-            if (vals.Length != 2)
-                throw new ArgumentException("The passed string was not in the correct format");
-
-            string name = vals[0];
-            int score;
-            if(!int.TryParse(vals[1], out score))
-                throw new ArgumentException("The passed string's score was not an integer");
-
-            return new HighScoreItem(name, score);
-        }
-
-        public string ToSaveString()
-        {
-            return $"{Name.Trim()}\t{Score}";
-        }
-
-        public int CompareTo([AllowNull] HighScoreItem other)
-        {
-            return other.Score.CompareTo(Score);
-        }
-
-        public override string ToString()
-        {
-            return $"{Score} poäng av: {Name}";
-        }
-
     }
 }
